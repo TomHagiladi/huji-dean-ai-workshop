@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>בינה מלאכותית בעבודת הדיקנט</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@200;300;400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --green:#75B743; --green-dk:#5E9A28; --green-pale:#EDF5E4; --green-tint:#F5FAF0;
+  --red:#AF242A; --ink:#4A4845; --muted:#7A7874; --paper:#FFFFFF;
+  --pale:#F2F5EE; --line:#E2E7DB; --sand:#C9D6BC;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#2E2D2A;overflow:hidden;font-family:'Heebo',Arial,sans-serif}
+
+/* ---------- deck scaling ---------- */
+#stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#deck{width:1280px;height:720px;flex:0 0 1280px;position:relative;transform-origin:center center;
+  overflow:hidden;background:var(--paper);box-shadow:0 24px 80px rgba(0,0,0,.55)}
+.slide{position:absolute;inset:0;padding:48px 72px;display:none;flex-direction:column;
+  background:var(--paper);color:var(--ink);overflow:hidden}
+.slide.on{display:flex}
+
+/* ---------- typography (enlarged, no negative tracking) ---------- */
+h1{font-weight:800;font-size:66px;line-height:1.14;color:var(--green-dk)}
+h2{font-weight:800;font-size:50px;line-height:1.2;margin-bottom:22px}
+h2.c{text-align:center;margin-bottom:26px}
+p,li{font-size:28px;line-height:1.55;font-weight:300}
+b,strong{font-weight:700}
+.r{color:var(--red);font-weight:700}
+.g{color:var(--green-dk);font-weight:700}
+.lead{font-size:33px;line-height:1.5}
+.big{font-size:46px;line-height:1.38;font-weight:200}
+.huge{font-size:56px;line-height:1.3;font-weight:800}
+.dim{color:var(--muted)}
+.kicker{font-size:18px;letter-spacing:4px;color:var(--green-dk);font-weight:700;margin-bottom:12px}
+.rule{width:76px;height:5px;background:var(--green);margin:18px 0 22px;border-radius:3px}
+.ws{display:inline-block;background:var(--red);color:#fff;border-radius:30px;padding:6px 20px;
+  font-size:19px;font-weight:700;letter-spacing:.3px;vertical-align:middle}
+.en{direction:ltr;unicode-bidi:isolate;font-weight:500}
+
+/* ---------- lists (tilted-square bullets from the logo) ---------- */
+ul{list-style:none}
+ul.dots li{position:relative;padding-right:40px;margin:15px 0}
+ul.dots li:before{content:"";position:absolute;right:5px;top:17px;width:13px;height:13px;
+  border:3px solid var(--green);transform:rotate(24deg);border-radius:2px}
+ul.num{counter-reset:n}
+ul.num li{counter-increment:n;position:relative;padding-right:68px;margin:20px 0}
+ul.num li:before{content:counter(n,decimal-leading-zero);position:absolute;right:0;top:6px;
+  font-size:24px;color:var(--green);font-weight:800}
+
+/* ---------- layouts ---------- */
+.split{display:flex;gap:44px;flex:1;min-height:0;align-items:center}
+.split>.tx{flex:1.15;min-width:0}
+.split>.im{flex:1;min-width:0;align-self:stretch;display:flex;align-items:center;justify-content:center}
+.split>.im img{max-width:100%;max-height:100%;object-fit:contain}
+.wide-im{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.wide-im img{max-width:100%;max-height:100%;object-fit:contain}
+.strip{height:160px;width:100%;object-fit:cover;object-position:center;border-radius:6px;margin-top:auto}
+.mid{justify-content:center;text-align:center;align-items:center}
+.fill{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center}
+
+/* ---------- tables ---------- */
+table{border-collapse:collapse;width:100%;font-size:24px}
+th{background:var(--green);color:#fff;font-weight:700;padding:13px 18px;text-align:right;font-size:24px}
+th:first-child{background:var(--green-dk)}
+td{padding:12px 18px;border-bottom:1px solid var(--line);font-weight:300;vertical-align:top;line-height:1.45}
+tbody tr:nth-child(even) td{background:var(--green-tint)}
+table.sm{font-size:21px} table.sm td{padding:9px 14px;line-height:1.4}
+
+/* ---------- cards ---------- */
+.prompt{background:var(--green-tint);border:1px solid var(--line);border-right:7px solid var(--green);
+  border-radius:6px;padding:20px 26px;font-size:26px;line-height:1.5;font-weight:300}
+.prompt .lb{font-size:16px;letter-spacing:3px;color:var(--green-dk);font-weight:700;display:block;margin-bottom:8px}
+.note{background:var(--pale);border-radius:6px;padding:18px 24px;font-size:24px;line-height:1.5;
+  font-weight:300;border-right:6px solid var(--red)}
+.note .lb{font-weight:700;color:var(--red)}
+.cols{display:flex;gap:24px}
+.card{flex:1;background:#fff;border:1.5px solid var(--line);border-radius:8px;padding:22px 26px}
+.card h4{font-size:29px;font-weight:800;margin-bottom:10px;color:var(--green-dk)}
+.card.alt h4{color:var(--red)}
+.card p,.card li{font-size:24px;line-height:1.45}
+.pill{display:inline-block;background:var(--green-pale);color:var(--ink);border-radius:40px;
+  padding:7px 20px;font-size:22px;margin:5px 6px 5px 0;font-weight:400}
+.box{background:var(--green-tint);border:2px solid var(--green);border-radius:10px;padding:26px 24px;
+  text-align:center;font-size:26px;line-height:1.5;flex:1;display:flex;align-items:center;justify-content:center}
+.box b{color:var(--green-dk)}
+
+/* ---------- bio logos ---------- */
+.logos{display:flex;gap:26px;align-items:center;justify-content:center;flex-wrap:nowrap;margin:8px 0}
+.logos img{height:78px;width:auto;object-fit:contain}
+.logos img.tall{height:118px}
+
+/* ---------- agenda / separator ---------- */
+.agenda{display:flex;flex-direction:column;gap:16px;margin-top:8px}
+.agenda .it{display:flex;align-items:center;gap:20px;font-size:38px;font-weight:400;color:var(--ink)}
+.agenda .it .n{font-size:20px;font-weight:800;color:var(--green);min-width:38px}
+.slide.sep{background:#9ED174;color:#fff}
+.slide.sep .kicker{color:#fff;opacity:.85}
+.slide.sep h2{color:#fff}
+.slide.sep .agenda .it{color:rgba(255,255,255,.7)}
+.slide.sep .agenda .it .n{color:rgba(255,255,255,.7)}
+.slide.sep .agenda .it.act{color:#fff;font-weight:800}
+.slide.sep .agenda .it.act .n{color:#fff}
+.slide.sep .agenda .it.act:after{content:"";width:15px;height:15px;background:#fff;
+  border:3px solid var(--red);transform:rotate(24deg);border-radius:2px;margin-right:8px}
+.slide.sep .logo-card{position:absolute;top:40px;left:72px;background:#fff;border-radius:10px;padding:10px 16px}
+.slide.sep .logo-card img{width:150px;display:block}
+
+.slide.sep h2,.slide.sep .kicker,.slide.sep .agenda .it{-webkit-text-stroke:1px #1F1E1C;paint-order:stroke fill;text-shadow:0 1px 3px rgba(0,0,0,.35)}
+.slide.sep .sep-art{position:absolute;left:60px;bottom:36px;width:470px;filter:drop-shadow(0 4px 10px rgba(0,0,0,.18))}
+
+/* ---------- title / closing ---------- */
+.title-wrap{flex:1;display:flex;flex-direction:column;justify-content:center}
+.logo{position:absolute;top:40px;left:72px;width:160px}
+.logo-lg{width:420px;margin-bottom:30px}
+
+/* ---------- video ---------- */
+.vidwrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+.vidwrap video{max-width:100%;max-height:100%;border-radius:4px;box-shadow:0 10px 40px rgba(0,0,0,.18)}
+
+/* ---------- full image ---------- */
+.slide.contain{padding:30px}
+.slide.contain img{width:100%;height:100%;object-fit:contain}
+
+ul.num.sum li{margin:15px 0}
+
+/* ---------- fragments ---------- */
+.f{opacity:0;transform:translateY(9px);transition:opacity .3s ease,transform .3s ease}
+.f.vis{opacity:1;transform:none}
+
+/* ---------- chrome ---------- */
+#bar{position:fixed;bottom:0;right:0;height:4px;background:var(--green);transition:width .25s ease;z-index:9}
+#num{position:fixed;bottom:14px;left:20px;color:#8d8b86;font-size:13px;letter-spacing:1px;z-index:9}
+#help{position:fixed;bottom:14px;right:20px;color:#75736e;font-size:12px;z-index:9}
+</style>
+</head>
+<body>
+<div id="stage"><div id="deck">
+
+<!-- ══════════ בלוק 1 · פתיחה ══════════ -->
+
+<!-- 1 שער -->
+<section class="slide mid">
+  <div class="title-wrap" style="align-items:center;text-align:center">
+    <img src="assets/logo.png" class="logo-lg" alt="">
+    <h1>בינה מלאכותית<br>בעבודת הדיקנט</h1>
+    <div class="rule" style="margin:26px auto"></div>
+    <p class="lead dim">מכלי מזדמן <span class="r">לשותף עבודה יומיומי</span></p>
+    <p class="f" style="margin-top:34px;font-size:24px">תום הגלעדי<br>
+      <span class="dim">ריטריט הנהלת דיקנט הסטודנטים &middot; 8 בספטמבר 2026</span></p>
+  </div>
+</section>
+
+<!-- 2 מי אני -->
+<section class="slide">
+  <img src="assets/logo.png" class="logo" alt="">
+  <div class="kicker">נעים להכיר</div>
+  <h2 style="margin-bottom:8px">מי אני, בקצרה</h2>
+  <ul class="dots" style="font-size:25px">
+    <li class="f">עשרים שנה כאיש חינוך, חלקן בניהול מערכות חינוך</li>
+    <li class="f">שלוש השנים האחרונות: רק הממשק שבין בינה מלאכותית לארגוני למידה והוראה -
+      משרד החינוך, האקדמיה, וליווי התייעלות במגזר העסקי</li>
+  </ul>
+  <div class="logos f">
+    <img src="assets/bio/shorashim.webp" style="height:98px" alt="">
+    <img src="assets/bio/pisga.png" style="height:94px" alt="">
+    <img src="assets/bio/madanei.jpg" style="height:114px" alt="">
+    <img src="assets/bio/podcast.jpg" style="height:114px" alt="">
+    <img src="assets/bio/book.png" style="height:154px" alt="">
+    <img src="assets/bio/community.png" style="height:114px" alt="">
+  </div>
+  <div class="f" style="margin-top:auto;text-align:center;background:var(--green-tint);
+    border:2px solid var(--green);border-radius:10px;padding:16px 26px">
+    <p style="font-size:30px;font-weight:700"><span class="r">אני עצמי מתמודד עם הפרעת קשב.</span>
+      חלק ממה שאראה היום - אני משתמש בו בעצמי, כל יום.</p>
+  </div>
+</section>
+
+<!-- 3 אג'נדה -->
+<section class="slide">
+  <img src="assets/logo.png" class="logo" alt="">
+  <div class="kicker">אוריינטציה</div>
+  <h2>מה נעשה היום</h2>
+  <div class="split" style="align-items:flex-start">
+    <div class="tx">
+      <div class="agenda">
+        <div class="it f"><span class="n">01</span> שינוי המיינדסט</div>
+        <div class="it f"><span class="n">02</span> שוויון הזדמנויות ומניעת נשירה</div>
+        <div class="it f"><span class="n">03</span> קשב, לקויות למידה ונגישות</div>
+        <div class="it f"><span class="n">04</span> התייעלות ארגונית</div>
+        <div class="it f"><span class="n">05</span> למידה אותנטית ותפקיד האקדמיה</div>
+      </div>
+    </div>
+    <div class="im"><img src="assets/gen/agenda.png" alt=""></div>
+  </div>
+</section>
+
+<!-- 4 השאלה -->
+<section class="slide mid">
+  <div class="kicker" style="position:absolute;top:44px;left:0;right:0;text-align:center">שינוי המיינדסט</div>
+  <div class="title-wrap" style="text-align:center;align-items:center">
+    <p class="big dim f" style="text-decoration:line-through;text-decoration-thickness:1px">
+      "מה הכלי הזה יודע לעשות?"</p>
+    <div class="rule f" style="margin:38px auto"></div>
+    <p class="huge f">"איזו עבודה <span class="r">שאני עושה היום</span>,<br>הוא יכול לקחת ממני?"</p>
+  </div>
+</section>
+
+<!-- 5 שני סוגי משתמשים -->
+<section class="slide">
+  <h2 style="margin-bottom:14px">שני סוגי משתמשים</h2>
+  <table style="font-size:22px" class="sm">
+    <thead><tr><th style="width:50%">משתמש מזדמן</th><th>שותף עבודה</th></tr></thead>
+    <tbody>
+      <tr class="f"><td>ניגש לכלי הבינה המלאכותית רק כשנתקע</td><td>פותח את הכלי לפני שמתחיל לעבוד</td></tr>
+      <tr class="f"><td>מבקש תוצר מוגמר</td><td>מבקש תהליך ומלווה אותו</td></tr>
+      <tr class="f"><td>שואל שאלה אחת ועוזב את הכלי</td><td>מנהל שיחה מתמשכת</td></tr>
+      <tr class="f"><td>לא נותן שום הקשר</td><td>מזין את כל ההקשר הרלוונטי</td></tr>
+      <tr class="f"><td>בודק אם התשובה נכונה</td><td>בונה יחד עם הכלי את התשובה</td></tr>
+      <tr class="f"><td>חוסך דקות</td><td><span class="g">חוסך שעות</span></td></tr>
+    </tbody>
+  </table>
+  <img src="assets/gen/usersstrip.png" class="strip" alt="">
+</section>
+
+<!-- 6 ההבדל בפועל -->
+<section class="slide">
+  <h2 style="margin-bottom:6px">ההבדל בפועל</h2>
+  <p class="dim" style="margin-bottom:16px">המשימה: לנסח מכתב דחייה לבקשת סיוע כלכלי</p>
+  <div class="split" style="align-items:stretch">
+    <div class="tx" style="display:flex;flex-direction:column;gap:18px">
+      <div class="card f">
+        <h4>מזדמן</h4>
+        <p>"כתוב מכתב דחייה לסטודנט."</p>
+        <p class="dim">מכתב גנרי וקר. צריך לשכתב מהתחלה.</p>
+      </div>
+      <div class="card f">
+        <h4>שותף</h4>
+        <p>הנוהל, הקריטריונים, שני מכתבים קודמים שיצאו טוב, והטון שהיחידה רוצה.</p>
+        <p class="dim">מכתב שאפשר לשלוח.</p>
+      </div>
+      <p class="huge f" style="font-size:40px;margin-top:4px">ההבדל הוא לא בכלי. <span class="r">הוא בהקשר ובמיומנות השימוש.</span></p>
+    </div>
+    <div class="im"><img src="assets/gen/sixcards.png" alt=""></div>
+  </div>
+</section>
+
+<!-- 7 אבטחת מידע -->
+<section class="slide">
+  <div class="split">
+    <div class="tx">
+      <h2>אבטחת מידע ופרטיות</h2>
+      <ul class="dots">
+        <li class="f"><span class="r">אסור</span> להעלות מידע מזהה של סטודנטים לגרסאות החינמיות.</li>
+        <li class="f"><b>למה:</b> בגרסאות החינמיות המידע עשוי לשמש לאימון המודל.</li>
+        <li class="f"><b>מה כן:</b> רישיון ארגוני עם הסכם אבטחת מידע, או <span class="g">אנונימיזציה</span> -
+          למחוק שמות, מספרי זהות וכל פרט מזהה לפני ההעלאה.</li>
+      </ul>
+    </div>
+    <div class="im"><img src="assets/gen/security.png" alt=""></div>
+  </div>
+</section>
+
+
+<!-- ══════════ בלוק 2 · שוויון ══════════ -->
+
+<!-- 8 מפריד -->
+<section class="slide sep">
+  <div class="logo-card"><img src="assets/logo.png" alt=""></div>
+  <img src="assets/gen/separt.png" class="sep-art" alt="">
+  <div class="kicker">בלוק שני</div>
+  <h2>שוויון הזדמנויות ומניעת נשירה</h2>
+  <div class="agenda">
+    <div class="it"><span class="n">01</span> שינוי המיינדסט</div>
+    <div class="it act"><span class="n">02</span> שוויון הזדמנויות ומניעת נשירה</div>
+    <div class="it"><span class="n">03</span> קשב, לקויות למידה ונגישות</div>
+    <div class="it"><span class="n">04</span> התייעלות ארגונית</div>
+    <div class="it"><span class="n">05</span> למידה אותנטית ותפקיד האקדמיה</div>
+  </div>
+</section>
+
+<!-- 9 ההבטחה -->
+<section class="slide">
+  <div class="split">
+    <div class="tx">
+      <div class="kicker">ההבטחה הגדולה</div>
+      <p class="huge" style="font-size:44px">"הבינה המלאכותית תהיה<br>
+        או <span class="g">המשווה הגדול ביותר</span> שהומצא אי פעם,<br>
+        או <span class="r">מקור העוול הגרוע ביותר</span>."</p>
+      <p class="dim f" style="font-size:22px;margin-top:14px">ביל גייטס, מאמר מ-26 באוגוסט 2026<br>
+        <span class="en" style="font-size:19px">"AI will either be the greatest equalizer ever invented, or the worst source of injustice."</span></p>
+      <div class="rule f"></div>
+      <p class="lead f">מורה פרטי, עשרים וארבע שעות ביממה, בחינם, לכל אחד.<br>
+        <span class="dim">בואו נבדוק את זה לעומק.</span></p>
+    </div>
+    <div class="im"><img src="assets/gen/promise.png" alt=""></div>
+  </div>
+</section>
+
+<!-- 10 מקדם שוויון -->
+<section class="slide">
+  <h2 class="c" style="margin-top:-8px">איפה זה באמת <span class="g">מקדם שוויון</span></h2>
+  <div class="split">
+    <div class="tx">
+      <ul class="dots" style="font-size:23px">
+        <li class="f"><b>הון תרבותי סמוי.</b> איך כותבים מייל למרצה. מה זו שעת קבלה. איך מבקשים
+          הארכה בלי להישמע חצוף. עכשיו יש את מי לשאול בלי להתבייש.</li>
+        <li class="f"><b>שפה.</b> דובר ערבית, רוסית או אמהרית, ועולה חדש - קורא מאמר אקדמי
+          בשפת האם, וחוזר לעברית.</li>
+        <li class="f"><b>ניווט בירוקרטי.</b> טפסים, מלגות, זכויות, ועדות חריגים.</li>
+        <li class="f"><b>זמינות.</b> מי שעובד במשמרות לא מגיע לשעת קבלה. הכלי זמין בשתיים בלילה.</li>
+      </ul>
+    </div>
+    <div class="im"><img src="assets/gen/equality.png" alt=""></div>
+  </div>
+</section>
+
+<!-- 11 מגדיל פערים -->
+<section class="slide">
+  <h2 class="c" style="margin-top:-8px">ואיפה זה <span class="r">מגדיל פערים</span></h2>
+  <div class="split">
+    <div class="tx">
+      <ul class="dots" style="font-size:23px">
+        <li class="f"><b>פער הגישה.</b> הגרסה הטובה עולה עשרים דולר בחודש לפחות.
+          כבר לא "יש אינטרנט או אין" - אלא <span class="r">"יש מודל טוב או אין"</span>.</li>
+        <li class="f"><b>פער האוריינות.</b> מי שיודע לשאול מקבל תשובה טובה פי כמה.
+          הפער הזה נסתר - מבחוץ נראה שלכולם יש אותו כלי.</li>
+        <li class="f"><b>פער הביקורתיות.</b> כדי לזהות שהמודל המציא, צריך ידע קודם.</li>
+        <li class="f"><b>פער המוטיבציה.</b> בין מי שרוצה <span class="g">ללמוד</span> למי שרוצה
+          <span class="r">תעודה</span>. נרחיב על זה בהמשך.</li>
+        <li class="f"><b>הטיה במודל.</b> המודלים אומנו על תרבות מערבית פרוגרסיבית, ומשקפים אותה.</li>
+      </ul>
+    </div>
+    <div class="im"><img src="assets/gen/gaps.png" alt=""></div>
+  </div>
+</section>
+
+<!-- 12 הפרדוקס -->
+<section class="slide">
+  <div class="split">
+    <div class="im"><img src="assets/gen/paradox.png" alt=""></div>
+    <div class="tx">
+      <div class="kicker">הפרדוקס</div>
+      <p class="huge" style="font-size:46px">מי שהכי צריך את הפיגום,<br>הוא גם מי שהכי בסיכון
+        <span class="r">להישען עליו במקום ללמוד</span>.</p>
+      <div class="rule f"></div>
+      <p class="big f">זו לא סיבה לא לתת.<br><b class="g">זו סיבה ללוות.</b></p>
+    </div>
+  </div>
+</section>
+
+<!-- 13 מסקנות -->
+<section class="slide">
+  <div class="split">
+    <div class="tx">
+      <h2>מה זה אומר לדיקנט</h2>
+      <ul class="num" style="font-size:25px">
+        <li class="f"><b>גישה היא עניין של <span class="r">מדיניות</span>.</b> אם האוניברסיטה רוכשת
+          רישיון לכולם, פער הגישה נסגר ביום אחד. אם לא - הוא נפתח מעצמו, בשקט.</li>
+        <li class="f"><b>אוריינות בינה מלאכותית היא <span class="r">שירות נגישות</span>.</b>
+          לא קורס טכנולוגי. שירות - כמו הדרכת ספרייה או סדנת ניהול זמן.</li>
+        <li class="f"><b>הליווי הוא ההבדל.</b> אותו כלי בדיוק, עם ליווי או בלעדיו, מייצר תוצאות הפוכות.</li>
+      </ul>
+    </div>
+    <div class="im"><img src="assets/gen/policy.png" alt=""></div>
+  </div>
+</section>
+
+<!-- 14 מניעת נשירה -->
+<section class="slide">
+  <div class="kicker">מניעת נשירה</div>
+  <h2 style="margin-bottom:4px">נשירה לא מתחילה מהחלטה</h2>
+  <p class="lead">היא מתחילה מרצף של <span class="r">אותות קטנים</span> - שכל אחד מהם לבדו נראה תמים.</p>
+  <div class="fill">
+    <svg viewBox="0 0 1140 300" style="width:100%;max-height:330px">
+      <line x1="30" y1="150" x2="1110" y2="150" stroke="#E2E7DB" stroke-width="3"/>
+      <g font-family="Heebo,sans-serif" font-size="21" fill="#4A4845" text-anchor="middle">
+        <g class="f"><circle cx="110" cy="150" r="10" fill="#75B743"/><text x="110" y="205">בקשת פריסת<tspan x="110" dy="26">שכר לימוד</tspan></text></g>
+        <g class="f"><circle cx="255" cy="150" r="12" fill="#75B743"/><text x="255" y="69">היעדרות<tspan x="255" dy="26">מבחינת ביניים</tspan></text></g>
+        <g class="f"><circle cx="400" cy="150" r="14" fill="#75B743"/><text x="400" y="205">בקשת סיוע כלכלי<tspan x="400" dy="26">באמצע הסמסטר</tspan></text></g>
+        <g class="f"><circle cx="545" cy="150" r="16" fill="#75B743"/><text x="545" y="69">בקשת הארכה<tspan x="545" dy="26">להגשת עבודה</tspan></text></g>
+        <g class="f"><circle cx="690" cy="150" r="18" fill="#75B743"/><text x="690" y="205">פנייה ראשונה<tspan x="690" dy="26">לשירות הפסיכולוגי</tspan></text></g>
+        <g class="f"><circle cx="835" cy="150" r="20" fill="#75B743"/><text x="835" y="69">בקשת יציאה<tspan x="835" dy="26">מהמעונות</tspan></text></g>
+        <g class="f"><circle cx="965" cy="150" r="22" fill="#75B743"/><text x="965" y="205">בקשת חופשת<tspan x="965" dy="26">לימודים</tspan></text></g>
+        <g class="f"><circle cx="1075" cy="150" r="30" fill="#AF242A"/><text x="1075" y="95" font-weight="800" font-size="27" fill="#AF242A">נשירה</text></g>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<!-- 15 שלוש שכבות -->
+<section class="slide">
+  <h2>שלוש שכבות של שימוש במידע</h2>
+  <ul class="num" style="font-size:26px">
+    <li class="f"><b>תיאור - "מה קרה?"</b> לנתח את הפניות של השנה האחרונה ולראות מגמות.</li>
+    <li class="f"><b>דפוסים - "מה משותף למי שנשר?"</b> לנתח נתונים היסטוריים אנונימיים ולזהות מאפיינים חוזרים.</li>
+    <li class="f"><b>חיזוי - "מי בסיכון עכשיו?"</b></li>
+  </ul>
+  <div class="note f" style="margin-top:auto">
+    <span class="lb">שאלה אליכם:</span> האם כבר קיימות מערכות כאלה באקדמיה?
+    אני מכיר מערכת שפותחה במגזר העסקי והוצגה בכנס מיט"ל.
+  </div>
+</section>
+
+<!-- 16 הצעה לפרויקט -->
+<section class="slide">
+  <div class="split">
+    <div class="tx">
+      <h2 style="font-size:42px">מאיפה אפשר להתחיל כפרויקט</h2>
+      <ul class="dots" style="font-size:23px">
+        <li class="f">לקחת את הפניות של השנה האחרונה, לעשות אנונימיזציה, ולשאול: מה חוזר?</li>
+        <li class="f">לקחת את מכתבי הבקשה לסיוע ולשאול: אילו קשיים מופיעים שלא שאלנו עליהם בטופס?</li>
+        <li class="f">לבנות תשובות מוכנות לשאלות שחוזרות הכי הרבה.</li>
+      </ul>
+      <div class="note f" style="margin-top:16px;font-size:22px">
+        <span class="lb">ה-<span class="en">case study</span> הוא לא העיקר.</span>
+        התמונה הגדולה היא: לבינה יש יכולת מפותחת מאוד לעבוד עם <b>מאסות של ידע</b> ולעבד אותן
+        למגמות - ומשם לתוכנית אסטרטגית, לצעדים להוצאה לפועל, ולפלטפורמות דיגיטליות ליישום.
+      </div>
+    </div>
+    <div class="im"><img src="assets/gen/chain.png" alt=""></div>
+  </div>
+</section>
+
+
+<!-- ══════════ בלוק 3 · קשב ונגישות ══════════ -->
+
+<!-- 17 מפריד -->
+<section class="slide sep">
+  <div class="logo-card"><img src="assets/logo.png" alt=""></div>
+  <img src="assets/gen/separt.png" class="sep-art" alt="">
+  <div class="kicker">בלוק שלישי</div>
+  <h2>קשב, לקויות למידה ונגישות</h2>
+  <div class="agenda">
+    <div class="it"><span class="n">01</span> שינוי המיינדסט</div>
+    <div class="it"><span class="n">02</span> שוויון הזדמנויות ומניעת נשירה</div>
+    <div class="it act"><span class="n">03</span> קשב, לקויות למידה ונגישות</div>
+    <div class="it"><span class="n">04</span> התייעלות ארגונית</div>
+    <div class="it"><span class="n">05</span> למידה אותנטית ותפקיד האקדמיה</div>
+  </div>
+</section>
+
+<!-- 18 הצהרה אישית (במכה אחת) -->
+<section class="slide mid">
+  <div class="title-wrap" style="text-align:center;align-items:center">
+    <p class="huge"><span class="r">אני מתמודד עם הפרעת קשב.</span></p>
+    <div class="rule" style="margin:30px auto"></div>
+    <p class="big">כל מה שאני מראה בחלק הזה -<br>אני משתמש בו בעצמי, כל יום.</p>
+    <p class="dim" style="margin-top:34px;font-size:24px">
+      עבדתי עם עמותת קווים ומחשבות, והתארחתי אצלם בפודקאסט:<br>
+      <b class="g">"מוח דיגיטלי, קשב אנושי - כיצד ה-AI משנה את חייו של בחור אחד עם ADHD"</b></p>
+  </div>
+</section>
+
+<!-- 19 פרדיגמה -->
+<section class="slide">
+  <div class="split">
+    <div class="im"><img src="assets/gen/glasses.png" alt=""></div>
+    <div class="tx">
+      <div class="kicker">שינוי הפרדיגמה</div>
+      <h2 style="font-size:44px">מתיקון להגברה</h2>
+      <p class="f">עשרות שנים ניסו "לתקן" את הליקוי - ללמד את המוח לתפקד אחרת.
+        זה עבד חלקית, ותסכל הרבה.</p>
+      <p class="f" style="margin-top:16px">הבינה מציעה משהו אחר: <b class="g">להחצין את התפקוד החוצה.</b></p>
+      <p class="huge f" style="margin-top:22px;font-size:42px">לא לתקן את הראייה.<br><span class="r">לתת משקפיים.</span></p>
+    </div>
+  </div>
+</section>
+
+<!-- 20 טבלת ADHD -->
+<section class="slide">
+  <h2 style="font-size:44px;margin-bottom:14px">מה נשבר ומה מחליף</h2>
+  <table class="sm">
+    <thead><tr><th style="width:19%">המאפיין</th><th style="width:38%">צוואר הבקבוק</th><th>מה הבינה נותנת</th></tr></thead>
+    <tbody>
+      <tr class="f"><td><b>שיתוק משימתי</b></td>
+        <td>המשימה נתפסת כגוש אחד גדול ומאיים. נדרשת אנרגיה עצומה רק כדי להתחיל, והיא לא מגיעה.</td>
+        <td>מנוע ייזום: מפרק את המשימה למיקרו-צעדים של דקות, ומייצר טיוטה ראשונה שמורידה את רף הכניסה.</td></tr>
+      <tr class="f"><td><b>זיכרון עבודה</b></td>
+        <td>אי אפשר להחזיק כמה פריטי מידע בו-זמנית. הוראה מורכבת נשכחת באמצע הביצוע.</td>
+        <td>זיכרון חיצוני: המודל מחזיק את כל ההקשר וההוראות, ואתה מעבד פריט אחד בכל פעם.</td></tr>
+      <tr class="f"><td><b>עיוורון זמן</b></td>
+        <td>אין תחושה של חלוף הזמן. הערכת משך משימה אופטימית תמיד, ולוחות זמנים קורסים.</td>
+        <td>תכנון לאחור מהדדליין, עם בלוקים של באפר בין משימות שנותנים תוקף למציאות.</td></tr>
+      <tr class="f"><td><b>תשישות החלטות</b></td>
+        <td>כל בחירה קטנה שואבת אנרגיה. אחרי כמה החלטות המאגר מתרוקן והתפקוד נעצר.</td>
+        <td>סינון אפשרויות, תיעדוף לפי היגיון ולא לפי רגש, והפיכת בחירות מורכבות לבינאריות פשוטות.</td></tr>
+      <tr class="f"><td><b>רגישות לדחייה</b></td>
+        <td>ביקורת עניינית או מייל קצר נחווים כדחייה אישית וכקטסטרופה, ומובילים להימנעות.</td>
+        <td>ניתוח טון אובייקטיבי של המסר, וניסוח תגובה מקצועית שלא מתגוננת ולא מתנצלת יתר על המידה.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 21 צוואר הבקבוק האנושי -->
+<section class="slide">
+  <div class="split">
+    <div class="tx">
+      <h2 style="font-size:42px">ואז צוואר הבקבוק<br>הופך להיות <span class="r">האדם</span></h2>
+      <p class="f" style="font-size:25px">בניתי לעצמי מערכות שלמות של סוכנים שמנהלים לי את החיים.
+        והגעתי לנקודה שבה מי שצריך להוציא אותן לפועל זה אני -
+        עם ההרגלים שלי, ועם המאפיינים האנושיים שלי.</p>
+      <p class="huge f" style="margin:18px 0;font-size:38px">אני הפכתי להיות<br>צוואר הבקבוק של עצמי.</p>
+      <div class="note f" style="font-size:22px">מה צריך סטודנט שיש לו בינה מלאכותית פנטסטית שמארגנת לו
+        את כל החיים? ואיך מספקים לו את <b>המעטפת האנושית</b> שתאפשר לו להשתמש בכלי הזה?</div>
+    </div>
+    <div class="im"><img src="assets/gen/bottleneck.png" alt=""></div>
+  </div>
+</section>
+
+<!-- 22 פורס הגבינה -->
+<section class="slide">
+  <div class="split">
+    <div class="tx">
+      <div class="kicker">טכניקה 01 &nbsp;<span class="ws">נתרגל בסדנה</span></div>
+      <h2 style="font-size:44px">פורס הגבינה</h2>
+      <p class="f">"כתוב עבודה סמינריונית" - <span class="r">המוח נכבה</span>.<br>
+        "פתח מסמך וכתוב את הכותרת" - אפשר.</p>
+      <div class="prompt f" style="margin-top:16px;font-size:23px">
+        <span class="lb">הפרומפט</span>
+        "יש לי עבודה של עשרה עמודים בעוד שבועיים. אני בקיפאון. פרק את זה לצעדים הקטנים ביותר
+        האפשריים, כך שאף צעד לא ייקח יותר מחמש עשרה דקות. תן לי צ'ק-ליסט כרונולוגי."
+      </div>
+      <p class="f dim" style="margin-top:14px;font-size:23px"><b>למה זה עובד:</b> האילוץ של חמש עשרה
+        דקות מגדיר מראש מה זה "סיימתי".</p>
+    </div>
+    <div class="im"><img src="assets/gen/slicer.png" alt=""></div>
+  </div>
+</section>
+
+<!-- 23 לוח זמנים הפוך -->
+<section class="slide">
+  <div class="split">
+    <div class="tx">
+      <div class="kicker">טכניקה 02 &nbsp;<span class="ws">נתרגל בסדנה</span></div>
+      <h2 style="font-size:44px">לוח זמנים הפוך</h2>
+      <p class="f">מתכננים רגילים מניחים יעילות מושלמת. ואז הם קורסים, ואז מרגישים כישלון.</p>
+      <div class="prompt f" style="margin-top:16px;font-size:23px">
+        <span class="lb">הפרומפט</span>
+        "אני צריך לצאת בשמונה בבוקר. יש לי הפרעת קשב ואני מוסח בקלות. בנה לי לוח זמנים אחורה
+        משמונה, וכלול בלוקים של חמש דקות באפר בין משימות. תגיד לי בדיוק מתי להתעורר."
+      </div>
+      <p class="f dim" style="margin-top:14px;font-size:23px"><b>למה זה עובד:</b> הבאפרים נותנים תוקף
+        למציאות במקום לכפות סטנדרט שקורס בהכרח - <span class="r">וכל קריסה מזינה את מעגל הבושה</span>.</p>
+    </div>
+    <div class="im"><img src="assets/gen/schedule.png" alt=""></div>
+  </div>
+</section>
+
+<!-- 24 הקאת מוח -->
+<section class="slide">
+  <div class="split">
+    <div class="im"><img src="assets/gen/braindump.png" alt=""></div>
+    <div class="tx">
+      <div class="kicker">טכניקה 03 &nbsp;<span class="ws">נתרגל בסדנה</span></div>
+      <h2 style="font-size:44px">הקאת מוח</h2>
+      <p class="f">כשזיכרון העבודה מלא - החרדה עולה והתפקוד יורד.</p>
+      <p class="f" style="margin-top:12px">לפרוק הכל החוצה <b class="g">לא</b> דורש תפקודים ניהוליים.<br>
+        לארגן <b class="r">כן</b> דורש. אותו מוציאים החוצה.</p>
+      <div class="prompt f" style="margin-top:14px;font-size:22px">
+        <span class="lb">הפרומפט</span>
+        "הנה כל מה שעובר לי בראש. אחת, מיין לקטגוריות. שתיים, זהה את המשימה האחת
+        שתוריד לי הכי הרבה חרדה. שלוש, הערך זמן ביצוע ריאלי לכל אחת."
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 25 מנתח הטון -->
+<section class="slide">
+  <div class="split">
+    <div class="tx">
+      <div class="kicker">טכניקה 04 &nbsp;<span class="ws">נתרגל בסדנה</span></div>
+      <h2 style="font-size:44px">מנתח הטון</h2>
+      <p class="f" style="font-size:25px">סטודנט מקבל מייל קצר מהמרצה, קורא בו דחייה אישית, ונכנס להימנעות.</p>
+      <div class="prompt f" style="margin-top:14px;font-size:22px">
+        <span class="lb">הפרומפט</span>
+        "קיבלתי את המייל הזה ואני מרגיש שהמרצה כועס עליי. נתח את הטון באופן אובייקטיבי לחלוטין.
+        האם הוא תוקפני, או פשוט ענייני וישיר? ואז עזור לי לנסח תשובה מקצועית שמכירה בביקורת,
+        בלי להתגונן ובלי להתנצל יתר על המידה."
+      </div>
+      <p class="f" style="margin-top:14px;font-size:25px">זה רלוונטי לא רק לסטודנטים.
+        <b class="r">גם לנו, לפני שאנחנו שולחים מייל בשעת כעס.</b></p>
+    </div>
+    <div class="im"><img src="assets/gen/tone.png" alt=""></div>
+  </div>
+</section>
+
+<!-- 26 לקרוא עם האוזניים -->
+<section class="slide">
+  <div class="split">
+    <div class="tx">
+      <div class="kicker">טכניקה 05 &nbsp;<span class="ws">נתרגל בסדנה</span></div>
+      <h2 style="font-size:44px">לקרוא עם האוזניים</h2>
+      <p class="f" style="font-size:24px">מאמר של שלושים עמודים הוא לפעמים חסם שלא נעבר.
+        לא בגלל היכולת - <span class="r">בגלל הקשב</span>.</p>
+      <p class="f" style="font-size:24px;margin-top:12px">מזינים את המאמר ל-<span class="en">NotebookLM</span>,
+        ומקבלים שיחה מוקלטת בין שני מנחים שמדברים עליו - עם אינטונציה, דיאלוג ועניין.</p>
+      <p class="f" style="font-size:24px;margin-top:12px">ואותו כלי יודע לייצר מאותו מאמר גם
+        <b class="g">מפת חשיבה</b>, <b class="g">סרטון וידאו</b> ברמה גבוהה מאוד,
+        ועיבוד של המידע <b class="g">בסגנון כתיבה אחר</b>.</p>
+      <div class="note f" style="margin-top:12px;font-size:21px"><span class="lb">אזהרה:</span>
+        לסינתזה ולחזרה. לא תחליף לקריאת המקור.</div>
+    </div>
+    <div class="im"><img src="assets/gen/listen.png" alt=""></div>
+  </div>
+</section>
+
+<!-- 27 מי מלמד -->
+<section class="slide">
+  <div class="split">
+    <div class="im"><img src="assets/gen/partner.png" alt=""></div>
+    <div class="tx">
+      <h2 style="font-size:42px">מי מלמד את הסטודנטים<br>להשתמש בזה נכון</h2>
+      <p class="f" style="font-size:25px">רוב הסטודנטים, ורוב המשתמשים בכלל, משתמשים בבינה
+        <span class="r">כמכונת תשובות</span>. או, בגרסה הבעייתית, ככותבת עבודות במקומם.</p>
+      <p class="f" style="font-size:25px;margin-top:14px">מעטים יודעים להשתמש בה כשותפת חשיבה,
+        כשותפה לניהול, כשותפה אסטרטגית. <b>מעטים מלמדים את זה.</b></p>
+      <p class="huge f" style="margin-top:18px;font-size:36px">מישהו צריך ללמד את זה.<br>
+        <span class="g">וזה יכול להיות אתם.</span></p>
+      <p class="f dim" style="margin-top:12px;font-size:22px">ואפשר לבנות פלטפורמה דיגיטלית
+        שמרכזת את הידע הזה ומנגישה אותו לסטודנטים.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════ בלוק 4 · התייעלות ══════════ -->
+
+<!-- 28 מפריד -->
+<section class="slide sep">
+  <div class="logo-card"><img src="assets/logo.png" alt=""></div>
+  <img src="assets/gen/separt.png" class="sep-art" alt="">
+  <div class="kicker">בלוק רביעי</div>
+  <h2>התייעלות ארגונית</h2>
+  <div class="agenda">
+    <div class="it"><span class="n">01</span> שינוי המיינדסט</div>
+    <div class="it"><span class="n">02</span> שוויון הזדמנויות ומניעת נשירה</div>
+    <div class="it"><span class="n">03</span> קשב, לקויות למידה ונגישות</div>
+    <div class="it act"><span class="n">04</span> התייעלות ארגונית</div>
+    <div class="it"><span class="n">05</span> למידה אותנטית ותפקיד האקדמיה</div>
+  </div>
+</section>
+
+<!-- 29 הידע מתאדה -->
+<section class="slide">
+  <div class="split">
+    <div class="tx">
+      <h2>הידע מתאדה</h2>
+      <p class="f">הדיקנט רץ על פגישות. ישיבות צוות, ועדות, שיחות תיאום, שיחות עם סטודנטים.</p>
+      <p class="f" style="margin-top:14px">מה שנאמר בפגישה נשאר בראש של מי שהיה שם -
+        ובסיכומים ושרבוטים <span class="r">שלרוב לא מקוטלגים באופן סיסטמטי</span>.<br>
+        עברה שנה, התחלף רכז, והידע איננו.</p>
+      <p class="huge f" style="margin-top:20px;font-size:38px">זו לא בעיה של תיעוד.<br>
+        זו בעיה של <span class="g">זיכרון ארגוני</span>.</p>
+    </div>
+    <div class="im"><img src="assets/gen/evaporate.png" alt=""></div>
+  </div>
+</section>
+
+<!-- 30 שני כלים -->
+<section class="slide">
+  <h2>שני כלים לתמלול פגישות</h2>
+  <table>
+    <thead><tr><th style="width:16%"></th><th style="width:42%">טיימלס</th><th>פלאוד</th></tr></thead>
+    <tbody>
+      <tr class="f"><td>מתי</td><td>פגישות מקוונות</td><td>שיחות פנים אל פנים</td></tr>
+      <tr class="f"><td>איך</td><td>מצטרף לזום או למיט כמשתתף</td><td>מכשיר קטן בכיס או על השולחן</td></tr>
+      <tr class="f"><td>מפיק</td><td>תמלול, זיהוי דוברים, סיכום מובנה</td><td>תמלול וסיכום</td></tr>
+    </tbody>
+  </table>
+  <p class="huge f" style="margin-top:auto;font-size:36px">השאלה היא לא איזה כלי טוב יותר.<br>
+    השאלה היא <span class="r">איך מתעדים את כל מה שנאמר</span> בכל הפגישות - ומארגנים את זה.</p>
+</section>
+
+<!-- 31 בשביל מי בונים הקשר -->
+<section class="slide">
+  <div class="split">
+    <div class="im"><img src="assets/gen/context.png" alt=""></div>
+    <div class="tx">
+      <h2 style="font-size:42px">בשביל מי אנחנו<br>בונים את ההקשר</h2>
+      <p class="f">אף אדם לא יקרא מאתיים תמלולי פגישות. זה פשוט לא אפשרי.</p>
+      <p class="huge f" style="margin:18px 0;font-size:36px">אבל אנחנו לא בונים את ההקשר לבני אדם.<br>
+        <span class="g">אנחנו בונים אותו לבינה המלאכותית.</span></p>
+      <p class="f">וברגע שמבינים את זה, ההיגיון מתהפך: ככל שנצבור יותר הקשר - כך נהיה יעילים יותר.
+        <b class="r">מה שהיה עומס, הופך לנכס.</b></p>
+    </div>
+  </div>
+</section>
+
+<!-- 32 ארגונים לסוכנים -->
+<section class="slide">
+  <div class="split">
+    <div class="tx">
+      <h2 style="font-size:42px">ארגונים צריכים להיבנות<br>לעולם של סוכנים</h2>
+      <p class="f" style="font-size:25px">אתרי אינטרנט כבר עושים את זה היום. הם נבנים כדי שבוטים וסוכנים
+        ימצאו אותם ויקראו אותם - לא רק בני אדם. כרגע מאחורי הקלעים, ובהמשך גם בממשק המשתמש.</p>
+      <p class="huge f" style="margin-top:20px;font-size:38px"><span class="r">אותו דבר יקרה לארגונים.</span></p>
+      <div class="note f" style="margin-top:16px;font-size:23px">השאלה שכדאי להתחיל לשאול היום:
+        האם הידע של הדיקנט בנוי כך <b>שסוכן יוכל לעבוד איתו</b>?</div>
+    </div>
+    <div class="im"><img src="assets/gen/agentsorg.png" alt=""></div>
+  </div>
+</section>
+
+<!-- 33 הקלטת שיחות -->
+<section class="slide">
+  <div class="split">
+    <div class="tx">
+      <h2 style="font-size:42px">הקלטת שיחות: מה מותר ואיך</h2>
+      <p class="f" style="font-size:24px">פלאוד עומד בתקנים הבינלאומיים המחמירים לאבטחת מידע רפואי
+        ופרטיות: <b class="g">הצפנה מלאה</b>, <b class="g">אפס אימון</b> על המידע שלכם,
+        <b class="g">אפס שמירה</b> אצל מודלי השפה, והתחייבות חוזית שמאפשרת שימוש קליני.</p>
+      <p class="f" style="font-size:24px;margin-top:12px">הם אפילו מציעים תבניות סיכום ייעודיות
+        לפסיכותרפיה, ופסיכולוגים כבר עובדים עם זה. עם מנוי ארגוני - יש מעטפת אבטחת מידע.</p>
+      <div class="note f" style="margin-top:14px;font-size:23px">
+        <span class="lb">אבל.</span> זה לא משהו שמתחילים לבד. זה מגיע בצורה מאושרת ופורמלית, עם מדריך
+        "עשה ואל תעשה" <b>ממחלקת הדיגיטציה או מהיועץ המשפטי של המוסד</b>.
+      </div>
+    </div>
+    <div class="im"><img src="assets/gen/plaud.png" alt=""></div>
+  </div>
+</section>
+
+<!-- 34 NotebookLM -->
+<section class="slide">
+  <div class="split">
+    <div class="tx">
+      <h2 style="font-size:42px">הכלי שעונה מהמקורות שלך &nbsp;<span class="ws">נתרגל בסדנה</span></h2>
+      <p class="f" style="font-size:25px"><span class="en">NotebookLM</span> בנוי כך שהתשובות שלו
+        <b class="g">מעוגנות במקורות</b> שהזנת אליו, ומפנות אליהם. זה הכיוון של הכלי ואחת מנקודות הייחוד שלו.</p>
+      <div class="note f" style="margin-top:14px;font-size:22px"><span class="lb">הסתייגות:</span>
+        יש עדויות לכך שהוא כן מכניס ידע עולם לפעמים. לא מוחלט - אבל עדיין הכלי הכי קרוב למה שאתם צריכים.</div>
+      <p class="f dim" style="margin-top:14px;font-size:23px"><b>מה אפשר להזין:</b>
+        קבצי PDF, מסמכי וורד, מצגות, אתרי אינטרנט, קבצי אודיו, סרטוני יוטיוב.</p>
+    </div>
+    <div class="im f">
+      <div style="background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:24px;width:100%;max-width:440px">
+        <div style="font-size:16px;letter-spacing:3px;color:var(--green-dk);font-weight:700;margin-bottom:12px">מקורות</div>
+        <div class="pill" style="display:block;margin:6px 0">תקנון זכויות הסטודנט</div>
+        <div class="pill" style="display:block;margin:6px 0">נהלי ועדות חריגים</div>
+        <div class="pill" style="display:block;margin:6px 0">טפסים ולוחות זמנים</div>
+        <div style="border-top:1px solid var(--line);margin:18px 0 14px"></div>
+        <p style="font-size:22px;line-height:1.5">תשובה מעוגנת, עם הפניה
+          <span style="background:var(--green-pale);border-radius:3px;padding:1px 8px">1</span>
+          <span style="background:var(--green-pale);border-radius:3px;padding:1px 8px">2</span>
+          לסעיף המדויק.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 35 מה זה עושה ליחידה -->
+<section class="slide">
+  <div class="split">
+    <div class="tx">
+      <h2 style="font-size:42px">מה זה עושה ליחידה שלכם</h2>
+      <p class="dim" style="margin-bottom:12px;font-size:24px">מזינים אל הכלי כמקור את כל הנהלים, הטפסים והתקנונים. ואז:</p>
+      <ul class="dots" style="font-size:24px">
+        <li class="f">רכז חדש שואל שאלה ומקבל תשובה עם הפניה לסעיף המדויק.</li>
+        <li class="f">מייצרים שאלות ותשובות נפוצות לסטודנטים, מתוך הנהלים.</li>
+        <li class="f">הופכים תקנון יבש לפודקאסט של שמונה דקות.</li>
+        <li class="f">מייצרים אינפוגרפיקה או מפת חשיבה מתוך הנהלים.</li>
+      </ul>
+      <p class="huge f" style="margin-top:16px;font-size:34px">תרחיש לדוגמה: <span class="g">קליטת עובד חדש.</span><br>
+        <span class="dim" style="font-size:26px;font-weight:300">במקום שלושה חודשים של שאלות - מחברת אחת.</span></p>
+    </div>
+    <div class="im"><img src="assets/gen/notebook.png" alt=""></div>
+  </div>
+</section>
+
+<!-- 36 Gem -->
+<section class="slide">
+  <div class="split">
+    <div class="tx">
+      <h2 style="font-size:42px">השלב הבא: בוט ייעודי &nbsp;<span class="ws">נתרגל בסדנה</span></h2>
+      <p class="f"><span class="en">Gem</span> הוא שם של פיצ'ר בג'מיני. בפועל, זה <b class="g">מומחה שמור</b>.</p>
+      <p class="f" style="margin-top:14px">אתה נותן לו פעם אחת: הוראות קבועות, טון, כללים, ובסיס ידע.
+        והוא זוכר אותם לתמיד.</p>
+      <p class="f" style="margin-top:14px"><b>ההבדל מצ'אט רגיל:</b> אתה לא מסביר מחדש בכל פעם מי אתה,
+        מה היחידה עושה, ומה הכללים.</p>
+    </div>
+    <div class="im f">
+      <div style="background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:24px;width:100%;max-width:440px">
+        <div style="font-size:16px;letter-spacing:3px;color:var(--green-dk);font-weight:700">הוראות</div>
+        <div style="background:var(--green-tint);border-radius:6px;padding:14px;margin:10px 0 20px;font-size:21px;line-height:1.45">
+          את/ה מומחה לזכויות הסטודנט. ענה לפי התקנון בלבד, בטון ענייני ואדיב.
+          אם אין תשובה בנהלים - אמור זאת והפנה לרכז.</div>
+        <div style="font-size:16px;letter-spacing:3px;color:var(--green-dk);font-weight:700">בסיס ידע</div>
+        <div style="margin-top:10px">
+          <span class="pill" style="font-size:20px">תקנון הזכויות</span>
+          <span class="pill" style="font-size:20px">נהלי ועדות</span>
+          <span class="pill" style="font-size:20px">טפסים</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 37 בוט זכויות הסטודנט -->
+<section class="slide">
+  <div class="split">
+    <div class="tx">
+      <h2 style="font-size:42px">דוגמה: בוט זכויות הסטודנט</h2>
+      <p class="f" style="font-size:24px"><b>מה מזינים:</b> תקנון זכויות הסטודנט, נהלי ועדות חריגים,
+        התאמות למילואים ולהורות, זכאות למלגות, לוחות זמנים לערעורים.</p>
+      <p class="f" style="font-size:24px;margin-top:10px"><b>מה מקבלים:</b> מומחה שעונה על
+        "מה מגיע לי?" בשפה של היחידה, לפי הכללים של היחידה.</p>
+      <div class="cols f" style="margin-top:16px">
+        <div class="card" style="border-right:7px solid var(--green)">
+          <h4>פנימי - הצוות</h4>
+          <p>מתחילים מחר בבוקר. אין סיכון. <b class="g">כאן מתחילים.</b></p>
+        </div>
+        <div class="card alt">
+          <h4>חיצוני - לסטודנטים</h4>
+          <p>כבר פרויקט: אבטחת מידע, בדיקה משפטית. אבל זה מה שיוריד את עומס הטלפונים.</p>
+        </div>
+      </div>
+    </div>
+    <div class="im"><img src="assets/gen/rights.png" alt=""></div>
+  </div>
+</section>
+
+<!-- 38 סוכנים -->
+<section class="slide">
+  <div class="split">
+    <div class="im"><img src="assets/gen/agentchat.png" alt=""></div>
+    <div class="tx">
+      <div class="kicker">קופצים מדרגה</div>
+      <h2 style="font-size:50px">סוכנים</h2>
+      <p class="huge f" style="font-size:40px">עד עכשיו דיברנו על משהו ש<span class="g">עונה</span>.<br>
+        סוכן הוא משהו ש<span class="r">עושה</span>.</p>
+      <p class="f" style="margin-top:22px">הוא ניגש לקבצים שלך, קורא אותם, כותב קבצים חדשים,
+        מריץ פעולות, ובודק את עצמו.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 39 איך זה נראה -->
+<section class="slide">
+  <div class="split">
+    <div class="tx">
+      <h2 style="font-size:42px">איך זה נראה בפועל &nbsp;<span class="ws">נתרגל בסדנה</span></h2>
+      <p class="f" style="font-size:24px">הכלים שאני עובד איתם: <b class="en">Claude Code</b> וגם <b class="en">Grok Bot</b>.
+        "קח את הקובץ הזה של ארבע מאות שורות, נקה כפילויות, סדר לפי תאריך, והוצא לי דוח."
+        בלי לפתוח אקסל. בלי לדעת לתכנת. לזה קוראים <b class="en">vibe coding</b>.</p>
+      <p class="f" style="font-size:24px;margin-top:12px">על סוכנים צריך <b class="r">מפגש נפרד</b> שמוקדש רק לזה.
+        זה ה-<span class="en">game changer</span> האמיתי, וזו חזית הטכנולוגיה.</p>
+      <div class="note f" style="margin-top:12px;font-size:22px">הבעיה היא בעיקר <b>גישה ארגונית</b> לכלים
+        האלה: מנוי בתשלום, בחירת כלי, אבטחת מידע.</div>
+    </div>
+    <div class="im"><img src="assets/gen/agent.png" alt=""></div>
+  </div>
+</section>
+
+<!-- 40 מה זה אומר לכם -->
+<section class="slide">
+  <div class="split">
+    <div class="im"><img src="assets/gen/curious.png" alt=""></div>
+    <div class="tx">
+      <p class="big f">זה לא לכולם, ולא מחר.</p>
+      <div class="rule f"></div>
+      <p class="huge f" style="font-size:40px">אבל בעוד שנה, "לבנות כלי קטן ליחידה"<br>
+        לא תהיה בקשה שמוגשת למחלקת מחשוב.</p>
+      <p class="f" style="margin-top:28px;font-size:28px"><b>מה כן כדאי:</b> שיהיה ביחידה אדם אחד
+        שמתעסק בזה.<br><span class="r">לא מומחה. סקרן.</span></p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════ בלוק 5 · למידה אותנטית ══════════ -->
+
+<!-- 41 מפריד -->
+<section class="slide sep">
+  <div class="logo-card"><img src="assets/logo.png" alt=""></div>
+  <img src="assets/gen/separt.png" class="sep-art" alt="">
+  <div class="kicker">בלוק חמישי</div>
+  <h2>למידה אותנטית ותפקיד האקדמיה</h2>
+  <div class="agenda">
+    <div class="it"><span class="n">01</span> שינוי המיינדסט</div>
+    <div class="it"><span class="n">02</span> שוויון הזדמנויות ומניעת נשירה</div>
+    <div class="it"><span class="n">03</span> קשב, לקויות למידה ונגישות</div>
+    <div class="it"><span class="n">04</span> התייעלות ארגונית</div>
+    <div class="it act"><span class="n">05</span> למידה אותנטית ותפקיד האקדמיה</div>
+  </div>
+</section>
+
+<!-- 42 סיפור על מוטיבציות -->
+<section class="slide">
+  <div class="kicker">סיפור על מוטיבציות</div>
+  <h2 style="font-size:42px;margin-bottom:10px">שני סטודנטים, אותה הרצאה</h2>
+  <div class="wide-im"><img src="assets/gen/students.png" alt=""></div>
+  <p class="huge f" style="margin-top:12px;font-size:36px;text-align:center">
+    מה שמפריד ביניהם הוא לא יכולת. <span class="r">זו מוטיבציה.</span></p>
+</section>
+
+<!-- 43 שתי מוטיבציות -->
+<section class="slide">
+  <h2 style="font-size:46px;margin-bottom:16px">שתי מוטיבציות, שני שימושים</h2>
+  <div style="flex:1;min-height:0;display:flex;gap:40px;align-items:stretch">
+    <div style="flex:1;display:flex;flex-direction:column;gap:20px">
+      <div class="card alt f" style="flex:1;display:flex;flex-direction:column;justify-content:center">
+        <h4 style="font-size:36px">רוצה תעודה</h4>
+        <p style="font-size:29px">משתמש בבינה כדי <b>לעקוף</b> את הלמידה.</p>
+      </div>
+      <div class="card f" style="flex:1;display:flex;flex-direction:column;justify-content:center">
+        <h4 style="font-size:36px">רוצה ללמוד</h4>
+        <p style="font-size:29px">משתמש בה כמורה פרטי, כמנטור, <b>כשותפת חשיבה</b>.</p>
+      </div>
+    </div>
+    <div style="flex:1.1;display:flex;flex-direction:column;justify-content:center">
+      <p class="huge f" style="font-size:42px">אותו כלי בדיוק -<br><span class="g">המשתמש הוא שמשתנה.</span></p>
+      <div class="rule f"></div>
+      <p class="huge f" style="font-size:38px">המערכת האקדמית נלחמת בכלי.<br><span class="r">אבל הבעיה מעולם לא הייתה הכלי.</span></p>
+    </div>
+  </div>
+</section>
+
+<!-- 44 השאלה -->
+<section class="slide mid">
+  <div class="title-wrap" style="text-align:center;align-items:center">
+    <p class="huge">האם ניתן לקיים תהליך למידה אותנטי,<br>
+      מבוסס <span class="g">מוטיבציה ללמידה</span>,<br>בסביבה רווית בינה מלאכותית?</p>
+  </div>
+</section>
+
+<!-- 45 איך נראית -->
+<section class="slide mid">
+  <div class="title-wrap" style="text-align:center;align-items:center">
+    <p class="huge">איך נראית <span class="g">למידה אותנטית</span>?</p>
+  </div>
+</section>
+
+<!-- 46-54 סיפור הלמידה (ממצגת היוטגוגיה, כפי שהן) -->
+<section class="slide contain"><img src="assets/story/image9.png" alt=""></section>
+<section class="slide">
+  <div class="vidwrap">
+    <video src="assets/story/story-video.mp4" poster="assets/story/image10.png" controls preload="metadata"></video>
+  </div>
+</section>
+<section class="slide contain"><img src="assets/story/image11.jpg" alt=""></section>
+<section class="slide contain"><img src="assets/story/image12.jpg" alt=""></section>
+<section class="slide contain"><img src="assets/story/image13.png" alt=""></section>
+<section class="slide contain"><img src="assets/story/image14.png" alt=""></section>
+<section class="slide contain"><img src="assets/story/image15.png" alt=""></section>
+<section class="slide contain"><img src="assets/story/image16.png" alt=""></section>
+<section class="slide contain"><img src="assets/story/image18.png" alt=""></section>
+
+<!-- 55 טבלה -->
+<section class="slide">
+  <h2 style="font-size:42px;margin-bottom:14px">למידה אותנטית מול הפרדיגמות השולטות</h2>
+  <table class="sm" style="font-size:23px">
+    <thead><tr><th style="width:50%">הפרדיגמות השולטות באקדמיה</th><th>מאפייני למידה אותנטית</th></tr></thead>
+    <tbody>
+      <tr class="f"><td>המרצה כמוקד הידע</td><td>הידע מבוזר</td></tr>
+      <tr class="f"><td>למידה מובנית סביב סילבוס קבוע מראש</td><td>מסלול הלמידה גמיש, דינמי ולא לינארי</td></tr>
+      <tr class="f"><td>הערכה סטנדרטית, טקסטואלית ומכוונת ציון</td><td>הערכה מבוססת יישום</td></tr>
+      <tr class="f"><td>הפרדה דיסציפלינרית</td><td>אינטרדיסציפלינריות כברירת מחדל</td></tr>
+      <tr class="f"><td>הסטודנט כצרכן פאסיבי של ידע</td><td>הלומד כיוצר אקטיבי</td></tr>
+      <tr class="f"><td>עליונות המחקר על פני ההוראה</td><td>עליונות היישום על פני התיאוריה</td></tr>
+      <tr class="f"><td>למידה בזמנים מוכתבים על ידי מערכת השעות</td><td>למידה מבוססת הספק</td></tr>
+      <tr class="f"><td>מרחב בחירה מוגבל ומדומה</td><td>אוטונומיה מוחלטת ללומד</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 56 השאלה הפתוחה -->
+<section class="slide mid">
+  <div class="title-wrap" style="text-align:center;align-items:center">
+    <p class="lead dim f">הבינה נכנסת לתהליכי הלמידה. היא נכנסת גם לתהליכי המחקר.<br>
+      היא מייתרת שטחים נרחבים בשניהם.</p>
+    <div class="rule f" style="margin:34px auto"></div>
+    <p class="huge f">מה מקומה של <span class="g">האקדמיה</span> בעולם הזה?</p>
+    <p class="huge f" style="margin-top:22px">ומה תפקיד <span class="r">הדיקנט</span><br>בתוך המהפכה הזו?</p>
+  </div>
+</section>
+
+
+<!-- ══════════ סיום ══════════ -->
+
+<!-- 57 לסיכום -->
+<section class="slide">
+  <h2 style="font-size:48px;margin-bottom:14px">לסיכום</h2>
+  <ul class="num sum" style="font-size:23.5px">
+    <li class="f"><b>שינוי המיינדסט.</b> מכלי מזדמן לשותף עבודה - ההבדל הוא <span class="g">בהקשר ובמיומנות השימוש</span>, לא בכלי. ואבטחת מידע קודמת לכל.</li>
+    <li class="f"><b>שוויון הזדמנויות ומניעת נשירה.</b> אותו כלי סוגר פערים או פותח אותם - <span class="r">הליווי הוא ההבדל</span>. הדיקנט רואה את האותות, והבינה יודעת לעבד מאסות של ידע למגמות.</li>
+    <li class="f"><b>קשב, לקויות למידה ונגישות.</b> מתיקון להגברה: הבינה מחצינה את התפקודים הניהוליים. חמש טכניקות מוכנות - <span class="g">ומישהו צריך ללמד אותן</span>.</li>
+    <li class="f"><b>התייעלות ארגונית.</b> זיכרון ארגוני שנבנה <span class="r">לבינה ולא לבני אדם</span>, נוטבוק ו-<span class="en">Gem</span> כמומחים שמורים, וסוכנים כחזית הבאה.</li>
+    <li class="f"><b>למידה אותנטית ותפקיד האקדמיה.</b> הבעיה מעולם לא הייתה הכלי אלא <span class="g">המוטיבציה</span> - והשאלה על מקום האקדמיה והדיקנט נשארת פתוחה.</li>
+  </ul>
+</section>
+
+<!-- 58 מה לוקחים -->
+<section class="slide">
+  <h2 style="font-size:44px">מה לוקחים מהשיחה? הצעות:</h2>
+  <div style="flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:20px">
+    <div class="box f"><span><b>הכלי לא משתנה.</b><br>אופן השימוש, ההקשר והמוטיבציה - כן.</span></div>
+    <div class="box f"><span><b>חשבו תהליך, לא תוצר.</b><br>הגדירו יעדים, תנו לכלי להציע את הדרך.</span></div>
+    <div class="box f"><span><b>ההבדל הוא בליווי ובהנגשה.</b></span></div>
+    <div class="box f" style="font-size:22px;line-height:1.45"><span><b>הפוטנציאל להתייעלות ארגונית, אם מטפלים באבטחת המידע, הוא אדיר.</b><br>
+      ניהול הידע והזיכרון הארגוני, מענה פרסונלי לסטודנט, וכלים חדשים כשירות -
+      והמשמעות היא הגברה בכל מדדי השירות של דיקנט הסטודנטים.</span></div>
+  </div>
+</section>
+
+<!-- 59 לחלק המעשי -->
+<section class="slide mid">
+  <div class="title-wrap" style="text-align:center;align-items:center">
+    <div class="kicker">אחרי ההפסקה</div>
+    <p class="huge f">מה שנעשה עכשיו הוא <span class="g">טעימה</span>.</p>
+    <p class="big f" style="margin-top:26px">נתנסה בכמה כלים בידיים שלכם,<br>
+      כדי שתרגישו את היכולות - לא כדי לסיים משהו.</p>
+    <div class="rule f" style="margin:34px auto"></div>
+    <p class="huge f" style="font-size:42px">הטמעה אמיתית היא לא סדנה. <span class="r">היא תהליך.</span></p>
+    <p class="f dim" style="margin-top:16px;font-size:26px">גאנט של הטמעת בינה מלאכותית בעבודת הדיקנט, לאורך זמן.</p>
+  </div>
+</section>
+
+<!-- 60 תודה -->
+<section class="slide">
+  <div class="split" style="gap:60px">
+    <div class="tx" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center">
+      <img src="assets/logo.png" alt="" style="width:400px;margin-bottom:34px">
+      <h1 style="font-size:64px">תודה</h1>
+      <div class="rule" style="margin:24px auto"></div>
+      <p class="lead">תום הגלעדי</p>
+    </div>
+    <div class="im"><img src="assets/qr.png" alt="" style="max-height:560px;width:auto"></div>
+  </div>
+</section>
+
+</div></div>
+
+<div id="bar"></div>
+<div id="num"></div>
+<div id="help">→ קדימה · ← אחורה · F מסך מלא</div>
+
+<script>
+(function(){
+  const deck   = document.getElementById('deck');
+  const slides = [...deck.querySelectorAll('.slide')];
+  const bar    = document.getElementById('bar');
+  const num    = document.getElementById('num');
+  let si = 0, fi = 0, lockHash = false;
+
+  function frags(){ return [...slides[si].querySelectorAll('.f')]; }
+  function render(){
+    slides.forEach((s,i)=>s.classList.toggle('on', i===si));
+    frags().forEach((f,i)=>f.classList.toggle('vis', i<fi));
+    bar.style.width = ((si+1)/slides.length*100) + '%';
+    num.textContent = (si+1) + ' / ' + slides.length;
+    lockHash = true; location.hash = (si+1); setTimeout(()=>{ lockHash = false; }, 0);
+    // pause any video when leaving its slide
+    deck.querySelectorAll('video').forEach(v=>{ if(!v.closest('.slide').classList.contains('on')) v.pause(); });
+  }
+  function next(){
+    // a video on the current slide plays on the first advance, before moving on
+    const v = slides[si].querySelector('video');
+    if(v && !v.dataset.played){ v.dataset.played = '1'; v.play(); return; }
+    if(fi < frags().length){ fi++; }
+    else if(si < slides.length-1){ si++; fi = 0; }
+    render();
+  }
+  function prev(){
+    if(fi > 0){ fi--; }
+    else if(si > 0){ si--; fi = frags().length; }
+    render();
+  }
+  function goto(n){ si = Math.max(0, Math.min(slides.length-1, n)); fi = frags().length; render(); }
+
+  // Right arrow = forward, Left arrow = back (per Tom)
+  document.addEventListener('keydown', e=>{
+    if(e.target.tagName === 'VIDEO') return;
+    switch(e.key){
+      case 'ArrowRight': case 'PageDown': case ' ': case 'Enter': e.preventDefault(); next(); break;
+      case 'ArrowLeft':  case 'PageUp': case 'Backspace':         e.preventDefault(); prev(); break;
+      case 'ArrowDown': e.preventDefault(); goto(si+1); break;
+      case 'ArrowUp':   e.preventDefault(); goto(si-1); break;
+      case 'Home': e.preventDefault(); goto(0); break;
+      case 'End':  e.preventDefault(); goto(slides.length-1); break;
+      case 'f': case 'F':
+        if(document.fullscreenElement) document.exitFullscreen();
+        else document.documentElement.requestFullscreen(); break;
+    }
+  });
+  deck.addEventListener('click', e=>{ if(e.target.closest('video')) return; next(); });
+  addEventListener('hashchange', ()=>{
+    if(lockHash) return;
+    const n = parseInt(location.hash.slice(1));
+    if(n >= 1 && n <= slides.length){ si = n-1; fi = 0; render(); }
+  });
+  function fit(){ deck.style.transform = 'scale(' + Math.min(innerWidth/1280, innerHeight/720) + ')'; }
+  addEventListener('resize', fit); fit();
+  const start = parseInt(location.hash.slice(1));
+  if(start >= 1 && start <= slides.length){ si = start-1; }
+  render();
+})();
+</script>
+</body>
+</html>
