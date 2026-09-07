@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>סדנת AI - דיקנט הסטודנטים</title>
-<meta name="description" content="פלטפורמת ההתנסות של סדנת הבינה המלאכותית לדיקנט הסטודנטים באוניברסיטה העברית: שש תחנות, פרומפטים מוכנים להעתקה, והוראות צעד אחר צעד.">
+<title>תחנה 3 - בונים Gem בג'מיני</title>
+<meta name="description" content="תחנה 3 בסדנת AI לדיקנט הסטודנטים: מומחה שמור - בוט זכויות הסטודנט - בעשר דקות">
 <link rel="icon" type="image/png" href="assets/logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -152,41 +152,46 @@ footer{border-top:1px solid var(--outline-dim);background:var(--surface);padding
 <body>
 <a href="#main-content" class="skip-link">דלג לתוכן הראשי</a>
 
-<header class="hero">
-  <div class="wrap">
-    <img class="logo" src="assets/logo.png" alt="תום הגלעדי - Empowering through AI">
-    <h1>סדנת AI - דיקנט הסטודנטים</h1>
-    <p class="sub">האוניברסיטה העברית &middot; 8 בספטמבר 2026 &middot; החלק המעשי</p>
-    <div class="join">
-      <img src="assets/qr-platform.png" alt="קוד QR לכתובת הפלטפורמה">
-      <p class="t">סרקו והצטרפו מהטלפון או מהמחשב</p>
-      <p class="u"><span class="en">tomhagiladi.github.io/huji-dean-ai-workshop</span></p>
-    </div>
-  </div>
+<header class="topbar">
+  <div class="wrap"><div class="row">
+    <a class="btn" href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>חזרה לדף הבית</a>
+    <nav aria-label="מסלול התחנות"><ol class="stepper"><li><a class="big" href="station-1.html" aria-label="תחנה 1 - ממשיכים את היעדים מאתמול">1</a></li><li class="ln" aria-hidden="true"></li><li><a class="" href="station-2.html" aria-label="תחנה 2 - מחברת Gemini Notebook עם חומרי הדיקנט">2</a></li><li class="ln" aria-hidden="true"></li><li><a class="" href="station-3.html" aria-label="תחנה 3 - בונים Gem בג'מיני" aria-current="page">3</a></li><li class="ln" aria-hidden="true"></li><li><a class="" href="station-4.html" aria-label="תחנה 4 - פרומפטים לקשב">4</a></li><li class="ln" aria-hidden="true"></li><li><a class="" href="station-5.html" aria-label="תחנה 5 - וויב קודינג בג'מיני">5</a></li><li class="ln" aria-hidden="true"></li><li><a class="big" href="station-6.html" aria-label="תחנה 6 - ואיך זה נראה אצלנו">6</a></li></ol></nav>
+    <nav aria-label="קישורים לכלים"><ul class="minitools"><li><a href="https://claude.ai" target="_blank" rel="noopener">קלוד</a></li><li><a href="https://gemini.google.com" target="_blank" rel="noopener">ג'מיני</a></li><li><a href="https://chatgpt.com" target="_blank" rel="noopener">צ'אט ג'יפיטי</a></li><li><a href="https://grok.com" target="_blank" rel="noopener">גרוק</a></li><li><a href="https://notebook.google.com" target="_blank" rel="noopener">Gemini Notebook</a></li></ul></nav>
+  </div></div>
 </header>
 <main id="main-content">
 <div class="wrap">
-  <section class="tools" aria-labelledby="tools-h"><h2 id="tools-h">קישורים לכלים - לחצו לפתיחה בלשונית חדשה</h2><ul><li><a class="tool" href="https://claude.ai" target="_blank" rel="noopener"><span class="nm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/></svg>קלוד</span><span class="ln">הכי חזק בכתיבה ובניתוח מסמכים ארוכים, ובשיחה שמחזיקה הקשר לאורך זמן</span></a></li><li><a class="tool" href="https://gemini.google.com" target="_blank" rel="noopener"><span class="nm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/></svg>ג'מיני</span><span class="ln">מחובר לגוגל דרייב; כאן בונים Gem, וכאן יש Canvas לוויב קודינג</span></a></li><li><a class="tool" href="https://chatgpt.com" target="_blank" rel="noopener"><span class="nm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/></svg>צ'אט ג'יפיטי</span><span class="ln">הכי מוכר, הממשק הכי פשוט, טוב בכל תחום</span></a></li><li><a class="tool" href="https://grok.com" target="_blank" rel="noopener"><span class="nm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/></svg>גרוק</span><span class="ln">הכי פחות פוליטיקלי קורקט, ברוח אילון מאסק - עונה ישיר גם כשלא נעים</span></a></li><li><a class="tool" href="https://notebook.google.com" target="_blank" rel="noopener"><span class="nm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/></svg>Gemini Notebook</span><span class="ln">לשעבר NotebookLM. עונה רק מהמקורות שהזנתם; כאן בונים מחברת</span></a></li></ul></section>
-  <div class="grid2">
-    <section class="card tone" aria-labelledby="how-h">
-      <h2 id="how-h">איך עובדים היום</h2>
-      <p class="lead">בזוגות, מחשב אחד לזוג. המטרה היא לעשות יחד, לדבר על ההתנסות תוך כדי, ולקיים סיעור מוחות של שני מוחות אנושיים עם מוח מלאכותי - ולדון בחוויה.</p>
-      <p>מומלץ לתפוס מרחק ולהתפזר בחלל. תום זמין ומסתובב בין כולם - מרימים יד וקוראים לו להתייעצות או לעזרה.</p>
-    </section>
-    <section class="card warn" aria-labelledby="sec-h">
-      <h2 id="sec-h">אבטחת מידע</h2>
-      <p class="lead">לא מזינים שמות, מספרי זהות או פרטים מזהים של סטודנטים לכלים החינמיים.</p>
-      <p>מי שעובד עם מנוי ארגוני של המוסד - מתנהל לפי הנחיות המוסד.</p>
-    </section>
-  </div>
-  <section class="route" aria-labelledby="route-h">
-    <h2 id="route-h">המסלול</h2>
-    <p class="hint">כולם מתחילים בתחנה 1. אחרי שמיציתם אותה - בחירה חופשית בין תחנות 2 עד 5, כל זוג לפי המסלול והקצב שלו. כולם מסיימים בתחנה 6.</p>
-    <a class="stcard anchor" href="station-1.html"><span class="n" aria-hidden="true">1</span><span class="tt"><span class="tag">כולם מתחילים כאן</span><br><h3>ממשיכים את היעדים מאתמול</h3><p class="what">ההקשר של היחידה, שיחה מתמשכת, ותוצר בכמה צורות</p></span><span class="go" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></span></a>
-    <div class="group-title"><h3>בחירה חופשית - אחרי תחנה 1</h3></div>
-    <div class="optional"><a class="stcard" href="station-2.html"><span class="n" aria-hidden="true">2</span><span class="tt"><h3>מחברת Gemini Notebook עם חומרי הדיקנט</h3><p class="what">מחברת שעונה רק מהנהלים שלכם - ואז פודקאסט, מפת חשיבה וסרטון</p></span><span class="go" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></span></a><a class="stcard" href="station-3.html"><span class="n" aria-hidden="true">3</span><span class="tt"><h3>בונים Gem בג'מיני</h3><p class="what">מומחה שמור - בוט זכויות הסטודנט - בעשר דקות</p></span><span class="go" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></span></a><a class="stcard" href="station-4.html"><span class="n" aria-hidden="true">4</span><span class="tt"><h3>פרומפטים לקשב</h3><p class="what">חמש הטכניקות מהמצגת, כתובות כמו שסטודנט אמיתי היה כותב</p></span><span class="go" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></span></a><a class="stcard" href="station-5.html"><span class="n" aria-hidden="true">5</span><span class="tt"><h3>וויב קודינג בג'מיני</h3><p class="what">אפליקציה קטנה ליחידה - בלי לדעת לתכנת</p></span><span class="go" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></span></a></div>
-    <a class="stcard anchor" href="station-6.html"><span class="n" aria-hidden="true">6</span><span class="tt"><span class="tag">כולם מסיימים כאן</span><br><h3>ואיך זה נראה אצלנו</h3><p class="what">שיחה בזוג, ומשפט אחד של היחידה שנאמר בקול</p></span><span class="go" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></span></a>
+  <section class="station-hero">
+    
+    <div class="head"><span class="n" aria-hidden="true">3</span><h1>בונים Gem בג'מיני</h1></div>
   </section>
+  <section class="card">
+    
+<p class="lead">בונים "מומחה שמור" - בוט זכויות הסטודנט. מי שבנה מחברת בתחנה 2 יכול לצרף אותה כידע ל-Gem בלחיצה אחת.</p>
+<ol class="steps">
+<li>נכנסים ל-<a href="https://gemini.google.com" target="_blank" rel="noopener"><span class="en">gemini.google.com</span></a></li>
+<li>פותחים את סרגל הצד (<span class="en">Open Sidebar</span>) ולוחצים <span class="en">Gems</span></li>
+<li>לוחצים <span class="en">New Gem</span></li>
+<li>נותנים שם, ומדביקים את ההוראות (התבנית למטה - בסיס לעריכה)</li>
+<li>תחת <span class="en">Knowledge</span> לוחצים <span class="en">Add files</span> - מהמחשב, מהדרייב, או <span class="en">More uploads</span> ואז <span class="en">Notebooks</span> כדי לצרף את המחברת מתחנה 2</li>
+<li>לוחצים <span class="en">Save</span>. ה-Gem מופיע תחת <span class="en">My Gems</span></li>
+</ol>
+<p>גוגל ממליצה על ארבעה רכיבים בהוראות - פרסונה, משימה, הקשר, פורמט - ומציעה כפתור שמרחיב שתי שורות להוראות מלאות. התבנית בנויה כך:</p>
+<div class="prompt"><div class="lb"><b>הוראות ה-Gem - בוט זכויות הסטודנט</b><button class="copy" type="button" aria-label="העתק את הוראות ה-Gem - בוט זכויות הסטודנט"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>העתק</span></button></div><pre>פרסונה: את/ה עוזר/ת מומחה/ית לזכויות הסטודנט בדיקנט הסטודנטים של האוניברסיטה העברית. הטון ענייני, אדיב ומדויק.
+
+משימה: לענות על שאלות של אנשי צוות הדיקנט בנוגע לזכויות, זכאויות, התאמות ונהלים - על בסיס המסמכים שצורפו בלבד.
+
+הקשר: המשתמשים הם רכזים ומנהלים ביחידות הדיקנט, לא סטודנטים. המסמכים שצורפו הם: תקנון זכויות הסטודנט, נהלי ועדות חריגים, התאמות למשרתי מילואים ולהורים, זכאות למלגות, ולוחות זמנים לערעורים.
+
+פורמט: תשובה קצרה בעברית, ומיד אחריה הפניה לסעיף המדויק במסמך שממנו נלקחה. אם התשובה לא נמצאת במסמכים - אמור/י זאת במפורש, אל תנחש/י, והפנה/י לרכז/ת הרלוונטי/ת.</pre><p class="hint">בסיס לעריכה - התאימו את רשימת המסמכים למה שבאמת צירפתם.</p></div>
+<div class="callout"><b>מבחן:</b> שלוש שאלות אמיתיות שרכזים שואלים כל שבוע. האם הוא הפנה לסעיף? האם הודה כשלא ידע?</div>
+<div class="callout"><b>שאלה לזוג:</b> אם היה לכם Gem כזה ביחידה - מה היה משתנה ביום העבודה של רכז חדש?</div>
+
+  </section>
+  <nav class="pagenav" aria-label="ניווט בין תחנות">
+    <a class="btn" href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>חזרה לדף הבית</a>
+    <a class="btn" href="station-4.html">לתחנה 4<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></a>
+  </nav>
 </div>
 </main>
 
