@@ -1,3 +1,519 @@
 <!DOCTYPE html>
-<html lang="he" dir="rtl"><head><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=deck/"><title>סדנת AI - דיקנט הסטודנטים</title></head>
-<body style="font-family:Arial,sans-serif;text-align:center;padding:60px"><p>מעביר למצגת... <a href="deck/">לחצו כאן אם לא עברתם אוטומטית</a></p></body></html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>סדנת AI - דיקנט הסטודנטים</title>
+<meta name="description" content="פלטפורמת ההתנסות של סדנת הבינה המלאכותית לדיקנט הסטודנטים באוניברסיטה העברית: שש תחנות, פרומפטים מוכנים להעתקה, והוראות צעד אחר צעד.">
+<link rel="icon" type="image/png" href="assets/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;800&family=Noto+Sans+Hebrew:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ---------- tokens (Material 3 roles in the brand palette) ---------- */
+:root{
+  --primary:#5E9A28;        /* green, UI outlines and large text (3:1+) */
+  --primary-text:#3F6E1C;   /* green for small text (4.5:1+) */
+  --primary-bright:#75B743; /* fills, rail lines, decorative */
+  --primary-container:#EDF5E4;
+  --surface:#FFFFFF;
+  --surface-2:#F6F9F2;
+  --outline:#C9D6BC;
+  --outline-dim:#DCE5D0;
+  --on-surface:#4A4845;
+  --on-surface-muted:#66645F;
+  --tertiary:#AF242A;       /* red: start, end, "copied" */
+  --tertiary-container:#FBECEC;
+  --font-display:'Heebo','Noto Sans Hebrew',Arial,sans-serif;
+  --font-body:'Noto Sans Hebrew','Heebo',Arial,sans-serif;
+  --r-sm:10px; --r-md:14px; --r-lg:20px;
+  --ease:cubic-bezier(.2,0,0,1);
+  --rail-w:72px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-body);color:var(--on-surface);background:var(--surface-2);
+  font-size:18px;line-height:1.7;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:var(--font-display);line-height:1.2}
+p{margin:0 0 .8em}
+a{color:var(--primary-text)}
+.en{direction:ltr;unicode-bidi:isolate;font-family:var(--font-display);font-weight:500}
+
+/* ---------- accessibility ---------- */
+.skip-link{position:absolute;top:-100%;right:0;background:var(--tertiary);color:#fff;
+  padding:.75rem 1.5rem;font-weight:700;z-index:200;text-decoration:none}
+.skip-link:focus{top:0;outline:3px solid #1F1E1C;outline-offset:2px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+a:focus-visible,button:focus-visible,summary:focus-visible,[tabindex]:focus-visible{
+  outline:3px solid var(--tertiary);outline-offset:3px;border-radius:6px}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
+
+/* ---------- layout ---------- */
+.wrap{max-width:900px;margin:0 auto;padding:0 20px}
+main{padding-bottom:80px}
+@media (min-width:900px){ body{padding-right:var(--rail-w)} }
+
+/* ---------- header ---------- */
+header.top{background:var(--surface);border-bottom:1px solid var(--outline-dim)}
+.brand{display:flex;align-items:center;gap:18px;padding:18px 0 10px}
+.brand img{height:54px;width:auto}
+.brand h1{font-size:26px;font-weight:800;color:var(--on-surface)}
+.brand .sub{font-size:16px;color:var(--on-surface-muted);margin:0}
+.join{display:none;gap:22px;align-items:center;background:var(--primary-container);
+  border:1px solid var(--outline);border-radius:var(--r-lg);padding:16px 20px;margin:8px 0 16px}
+.join img{width:150px;height:150px;border-radius:var(--r-sm);background:#fff;padding:6px;border:1px solid var(--outline)}
+.join .t{font-family:var(--font-display);font-weight:800;font-size:22px;margin:0 0 4px;color:var(--on-surface)}
+.join .u{font-size:15px;color:var(--on-surface-muted);margin:0}
+@media (min-width:900px){ .join{display:flex} }
+
+/* model chips bar - sticky */
+.chips{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.96);backdrop-filter:blur(6px);
+  border-bottom:1px solid var(--outline-dim)}
+.chips ul{list-style:none;display:flex;gap:10px;overflow-x:auto;padding:10px 20px;max-width:900px;margin:0 auto;scrollbar-width:none}
+.chips ul::-webkit-scrollbar{display:none}
+.chips a{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:999px;
+  border:1.5px solid var(--primary);color:var(--on-surface);text-decoration:none;font-weight:700;
+  font-size:16px;white-space:nowrap;background:var(--surface);transition:background .2s var(--ease);cursor:pointer}
+.chips a:hover{background:var(--primary-container)}
+
+/* ---------- cards ---------- */
+.card{background:var(--surface);border:1px solid var(--outline-dim);border-radius:var(--r-lg);padding:22px 24px;margin:18px 0}
+.card.tone{background:var(--primary-container);border-color:var(--outline)}
+.card.warn{border-right:6px solid var(--tertiary);background:var(--tertiary-container)}
+.card h2{font-size:24px;font-weight:800;margin-bottom:10px}
+.lead{font-size:19px}
+.callout{border-right:5px solid var(--primary-bright);background:var(--surface-2);border-radius:var(--r-sm);padding:14px 18px;margin:16px 0}
+.callout b{color:var(--primary-text)}
+ol.steps{padding-right:26px;margin:10px 0}
+ol.steps li{margin:8px 0;padding-right:6px}
+ul.tips{padding-right:24px;margin:10px 0} ul.tips li{margin:8px 0}
+
+/* prompt card */
+.prompt{background:var(--surface);border:1.5px solid var(--outline);border-radius:var(--r-md);padding:16px 18px 14px;margin:14px 0;position:relative}
+.prompt .lb{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+.prompt .lb b{font-family:var(--font-display);font-size:16px;color:var(--primary-text)}
+.prompt pre{white-space:pre-wrap;word-wrap:break-word;font-family:var(--font-body);font-size:17px;line-height:1.7;margin:0;color:var(--on-surface)}
+.prompt .hint{font-size:14px;color:var(--on-surface-muted);margin:10px 0 0}
+.copy{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border-radius:999px;
+  border:1.5px solid var(--primary);background:var(--primary-container);color:var(--on-surface);
+  font-family:var(--font-display);font-weight:700;font-size:15px;cursor:pointer;transition:background .2s var(--ease),transform .2s var(--ease);flex:none}
+.copy:hover{background:#E1EFD3}
+.copy:active{transform:scale(.97)}
+.copy.done{background:var(--tertiary);border-color:var(--tertiary);color:#fff}
+.copy svg{width:18px;height:18px;flex:none}
+
+/* ---------- stations ---------- */
+.station{scroll-margin-top:84px;margin:34px 0}
+.station-head{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+.station-head .n{width:46px;height:46px;border-radius:50%;border:3px solid var(--primary);display:grid;place-items:center;
+  font-family:var(--font-display);font-weight:800;font-size:20px;color:var(--primary-text);background:#fff;flex:none}
+.station-head h2{font-size:28px;font-weight:800}
+.station.anchor .station-head .n{background:var(--tertiary);border-color:var(--tertiary);color:#fff}
+.banner{display:inline-flex;align-items:center;gap:10px;background:var(--tertiary);color:#fff;border-radius:999px;
+  padding:8px 18px;font-family:var(--font-display);font-weight:800;font-size:17px;margin:0 0 12px}
+.banner svg{width:20px;height:20px}
+.group-title{display:flex;align-items:center;gap:14px;margin:44px 0 6px}
+.group-title h2{font-size:22px;font-weight:800;color:var(--on-surface-muted)}
+.group-title:before,.group-title:after{content:"";flex:1;height:2px;background:var(--outline-dim)}
+
+/* collapsible optional stations */
+details.station{border:1px solid var(--outline-dim);border-radius:var(--r-lg);background:var(--surface);margin:16px 0}
+details.station>summary{list-style:none;cursor:pointer;padding:18px 22px;display:flex;align-items:center;gap:14px;border-radius:var(--r-lg)}
+details.station>summary::-webkit-details-marker{display:none}
+details.station>summary:hover{background:var(--surface-2)}
+details.station>summary .n{width:46px;height:46px;border-radius:50%;border:3px solid var(--primary);display:grid;place-items:center;
+  font-family:var(--font-display);font-weight:800;font-size:20px;color:var(--primary-text);background:#fff;flex:none}
+details.station>summary .tt{flex:1}
+details.station>summary h2{font-size:24px;font-weight:800}
+details.station>summary .what{font-size:16px;color:var(--on-surface-muted);margin:2px 0 0}
+details.station>summary .chev{width:26px;height:26px;flex:none;transition:transform .25s var(--ease);color:var(--primary-text)}
+details.station[open]>summary .chev{transform:rotate(180deg)}
+details.station .body{padding:4px 22px 22px}
+
+/* ---------- the rail (signature move) ---------- */
+.rail{position:fixed;top:0;right:0;width:var(--rail-w);height:100vh;background:var(--surface);border-left:1px solid var(--outline-dim);
+  display:none;flex-direction:column;align-items:center;justify-content:center;z-index:60}
+.rail ol{list-style:none;display:flex;flex-direction:column;align-items:center;position:relative}
+.rail li{position:relative;display:flex;align-items:center;justify-content:center;height:78px}
+.rail li+li:before{content:"";position:absolute;top:-39px;width:4px;height:39px;background:var(--primary-bright);left:50%;transform:translateX(-50%)}
+.rail li+li:after{content:"";position:absolute;top:0;width:4px;height:0;left:50%;transform:translateX(-50%)}
+.rail a{width:30px;height:30px;border-radius:50%;border:3px solid var(--primary);background:#fff;display:grid;place-items:center;
+  font-family:var(--font-display);font-weight:800;font-size:14px;color:var(--primary-text);text-decoration:none;position:relative;z-index:1;
+  transition:transform .25s var(--ease),background .25s var(--ease)}
+.rail a.big{width:44px;height:44px;border-color:var(--tertiary);background:var(--tertiary);color:#fff;font-size:17px}
+.rail a.is-active{background:var(--primary-bright);color:#fff;transform:scale(1.15)}
+.rail a.big.is-active{background:var(--tertiary);transform:scale(1.15)}
+.rail a:hover{transform:scale(1.15)}
+.rail .tip{position:absolute;right:calc(100% + 14px);top:50%;transform:translateY(-50%);background:var(--on-surface);color:#fff;
+  padding:6px 12px;border-radius:8px;font-size:14px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s var(--ease)}
+.rail li:hover .tip,.rail a:focus-visible+.tip{opacity:1}
+.rail .cap{font-size:12px;color:var(--on-surface-muted);writing-mode:vertical-rl;transform:rotate(180deg);margin-top:14px;letter-spacing:1px}
+@media (min-width:900px){ .rail{display:flex} }
+
+/* mobile stepper */
+.stepper{position:sticky;top:64px;z-index:40;background:var(--surface);border-bottom:1px solid var(--outline-dim)}
+.stepper ol{list-style:none;display:flex;justify-content:space-between;align-items:center;max-width:900px;margin:0 auto;padding:10px 24px;position:relative}
+.stepper ol:before{content:"";position:absolute;right:36px;left:36px;top:50%;height:4px;background:var(--primary-bright);transform:translateY(-50%)}
+.stepper a{position:relative;z-index:1;width:36px;height:36px;border-radius:50%;border:3px solid var(--primary);background:#fff;display:grid;place-items:center;
+  font-family:var(--font-display);font-weight:800;font-size:15px;color:var(--primary-text);text-decoration:none}
+.stepper a.big{width:44px;height:44px;border-color:var(--tertiary);background:var(--tertiary);color:#fff}
+.stepper a.is-active{background:var(--primary-bright);color:#fff}
+.stepper a.big.is-active{background:var(--tertiary)}
+@media (min-width:900px){ .stepper{display:none} }
+
+/* ---------- tables ---------- */
+table{border-collapse:collapse;width:100%;font-size:16px;margin:10px 0}
+th{background:var(--primary-container);color:var(--on-surface);text-align:right;padding:10px 12px;border:1px solid var(--outline-dim);font-weight:700}
+td{padding:10px 12px;border:1px solid var(--outline-dim);vertical-align:top}
+.table-scroll-wrapper{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:1rem 0;border-radius:8px;position:relative}
+
+/* ---------- footer ---------- */
+footer{border-top:1px solid var(--outline-dim);background:var(--surface);padding:30px 0 40px;font-size:15px;color:var(--on-surface-muted)}
+.accessibility-statement{background:var(--surface-2);border:1px solid var(--outline-dim);border-radius:8px;padding:1.5rem 2rem;margin:1.5rem auto 0;max-width:700px}
+.accessibility-statement h3{font-size:18px;margin-bottom:8px;color:var(--on-surface)}
+
+@media (max-width:600px){
+  body{font-size:17px}
+  .brand h1{font-size:22px}
+  .station-head h2,details.station>summary h2{font-size:22px}
+  .card{padding:18px 16px}
+  .prompt pre{font-size:16px}
+}
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">דלג לתוכן הראשי</a>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <img src="assets/logo.png" alt="תום הגלעדי - Empowering through AI">
+      <div>
+        <h1>סדנת AI - דיקנט הסטודנטים</h1>
+        <p class="sub">האוניברסיטה העברית &middot; 8 בספטמבר 2026 &middot; החלק המעשי</p>
+      </div>
+    </div>
+    <div class="join" aria-label="הצטרפות לפלטפורמה">
+      <img src="assets/qr-platform.png" alt="קוד QR לכתובת הפלטפורמה">
+      <div>
+        <p class="t">סרקו והצטרפו מהטלפון או מהמחשב</p>
+        <p class="u"><span class="en">tomhagiladi.github.io/huji-dean-ai-workshop</span></p>
+      </div>
+    </div>
+  </div>
+  <nav class="chips" aria-label="קישורים למודלי השפה">
+    <ul>
+      <li><a href="https://claude.ai" target="_blank" rel="noopener">קלוד</a></li>
+      <li><a href="https://gemini.google.com" target="_blank" rel="noopener">ג'מיני</a></li>
+      <li><a href="https://chatgpt.com" target="_blank" rel="noopener">צ'אט ג'יפיטי</a></li>
+      <li><a href="https://grok.com" target="_blank" rel="noopener">גרוק</a></li>
+      <li><a href="https://notebook.google.com" target="_blank" rel="noopener">Gemini Notebook</a></li>
+    </ul>
+  </nav>
+</header>
+
+<nav class="stepper" aria-label="מסלול התחנות - טלפון">
+  <ol>
+    <li><a href="#s1" class="big" data-st="s1" aria-label="תחנה 1 - כולם מתחילים כאן">1</a></li>
+    <li><a href="#s2" data-st="s2" aria-label="תחנה 2 - מחברת">2</a></li>
+    <li><a href="#s3" data-st="s3" aria-label="תחנה 3 - Gem">3</a></li>
+    <li><a href="#s4" data-st="s4" aria-label="תחנה 4 - פרומפטים לקשב">4</a></li>
+    <li><a href="#s5" data-st="s5" aria-label="תחנה 5 - וויב קודינג">5</a></li>
+    <li><a href="#s6" class="big" data-st="s6" aria-label="תחנה 6 - כולם מסיימים כאן">6</a></li>
+  </ol>
+</nav>
+
+<nav class="rail" aria-label="מסלול התחנות">
+  <ol>
+    <li><a href="#s1" class="big" data-st="s1" aria-label="תחנה 1 - כולם מתחילים כאן">1</a><span class="tip" aria-hidden="true">כולם מתחילים כאן</span></li>
+    <li><a href="#s2" data-st="s2" aria-label="תחנה 2 - מחברת Gemini Notebook">2</a><span class="tip" aria-hidden="true">מחברת</span></li>
+    <li><a href="#s3" data-st="s3" aria-label="תחנה 3 - Gem בג'מיני">3</a><span class="tip" aria-hidden="true">Gem</span></li>
+    <li><a href="#s4" data-st="s4" aria-label="תחנה 4 - פרומפטים לקשב">4</a><span class="tip" aria-hidden="true">פרומפטים לקשב</span></li>
+    <li><a href="#s5" data-st="s5" aria-label="תחנה 5 - וויב קודינג">5</a><span class="tip" aria-hidden="true">וויב קודינג</span></li>
+    <li><a href="#s6" class="big" data-st="s6" aria-label="תחנה 6 - כולם מסיימים כאן">6</a><span class="tip" aria-hidden="true">כולם מסיימים כאן</span></li>
+  </ol>
+  <span class="cap" aria-hidden="true">המסלול</span>
+</nav>
+
+<main id="main-content">
+<div class="wrap">
+
+  <section class="card tone" aria-labelledby="how-h">
+    <h2 id="how-h">איך עובדים היום</h2>
+    <p class="lead">בזוגות, מחשב אחד לזוג. המטרה היא לעשות יחד, לדבר על ההתנסות תוך כדי, ולקיים סיעור מוחות של שני מוחות אנושיים עם מוח מלאכותי - ולדון בחוויה.</p>
+    <p>מומלץ לתפוס מרחק ולהתפזר בחלל. תום זמין ומסתובב בין כולם - מרימים יד וקוראים לו להתייעצות או לעזרה.</p>
+    <p><b>המסלול:</b> כולם מתחילים בתחנה 1. אחרי שמיציתם אותה - בחירה חופשית בין תחנות 2 עד 5, כל זוג לפי המסלול והקצב שלו. כולם מסיימים בתחנה 6.</p>
+  </section>
+
+  <section class="card warn" aria-labelledby="sec-h">
+    <h2 id="sec-h" style="font-size:20px">אבטחת מידע</h2>
+    <p style="margin:0">לא מזינים שמות, מספרי זהות או פרטים מזהים של סטודנטים לכלים החינמיים. מי שעובד עם מנוי ארגוני של המוסד - מתנהל לפי הנחיות המוסד.</p>
+  </section>
+
+  <!-- ===== station 0 ===== -->
+  <section class="card" id="s0" aria-labelledby="s0-h">
+    <div class="station-head"><span class="n" aria-hidden="true">0</span><h2 id="s0-h">בחרו את המודל שלכם</h2></div>
+    <p class="lead">חמישה כלים, שורה אחת על כל אחד. הבחירה חופשית, ועובדים איתו לאורך כל הסדנה. הקישורים גם בסרגל העליון.</p>
+    <table>
+      <thead><tr><th scope="col">כלי</th><th scope="col">כתובת</th><th scope="col">מה מייחד אותו</th></tr></thead>
+      <tbody>
+        <tr><td>קלוד</td><td><a href="https://claude.ai" target="_blank" rel="noopener"><span class="en">claude.ai</span></a></td><td>הכי חזק בכתיבה ובניתוח מסמכים ארוכים, ובשיחה שמחזיקה הקשר לאורך זמן</td></tr>
+        <tr><td>ג'מיני</td><td><a href="https://gemini.google.com" target="_blank" rel="noopener"><span class="en">gemini.google.com</span></a></td><td>מחובר לגוגל דרייב ולמסמכים שלכם; כאן בונים Gem, וכאן יש Canvas לוויב קודינג</td></tr>
+        <tr><td>צ'אט ג'יפיטי</td><td><a href="https://chatgpt.com" target="_blank" rel="noopener"><span class="en">chatgpt.com</span></a></td><td>הכי מוכר, הממשק הכי פשוט, טוב בכל תחום</td></tr>
+        <tr><td>גרוק</td><td><a href="https://grok.com" target="_blank" rel="noopener"><span class="en">grok.com</span></a></td><td>הכי פחות פוליטיקלי קורקט, ברוח אילון מאסק - עונה ישיר גם כשלא נעים</td></tr>
+        <tr><td>Gemini Notebook</td><td><a href="https://notebook.google.com" target="_blank" rel="noopener"><span class="en">notebook.google.com</span></a></td><td>לשעבר NotebookLM. עונה רק מהמקורות שהזנתם; כאן בונים מחברת</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ===== station 1 - everyone starts here ===== -->
+  <section class="card station anchor" id="s1" aria-labelledby="s1-h">
+    <p class="banner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>כולם מתחילים כאן</p>
+    <div class="station-head"><span class="n" aria-hidden="true">1</span><h2 id="s1-h">ממשיכים את היעדים מאתמול</h2></div>
+    <p class="lead">לוקחים את המטרות שנוסחו אתמול, נותנים למודל את ההקשר המלא של היחידה, ומנהלים איתו שיחה - לא שאלה אחת.</p>
+    <div class="callout"><b>לפני שמעתיקים:</b> הפרומפט הוא בסיס לעריכה ולדיוק. לא חייבים להעתיק אותו כמו שהוא, ואף מומלץ שלא - שנו, קצרו, הוסיפו. גם סדר פרומפטי ההמשך לא מחייב: עדיף לזרום עם השיחה ולשלב אותם כשרואים לנכון.</div>
+
+    <div class="prompt">
+      <div class="lb"><b>תבנית ההקשר</b><button class="copy" type="button" aria-label="העתק את תבנית ההקשר"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>העתק</span></button></div>
+<pre>אני [תפקיד] ביחידת [שם היחידה] בדיקנט הסטודנטים של האוניברסיטה העברית.
+היחידה שלנו אחראית על [תיאור של שתיים-שלוש שורות: מה עושים, למי, בכמה סטודנטים מדובר].
+אתמול, ביום היעדים של הריטריט, ניסחנו את המטרות הבאות לשנה הקרובה:
+[הדביקו כאן את המטרות כפי שנכתבו]
+האילוצים שלנו: [תקנים, תקציב, לוח זמנים, מערכות מידע קיימות].
+מה שכבר ניסינו בעבר ולא עבד: [אם יש].
+אני רוצה שתעזור לי להפוך את המטרות האלה לטיוטת תוכנית עבודה עם שלבים, אחראים ולוחות זמנים.
+לפני שאתה כותב משהו - שאל אותי שלוש שאלות הבהרה שיעזרו לך להבין את ההקשר טוב יותר, וחכה לתשובות שלי.</pre>
+      <p class="hint">בסיס לעריכה - שנו, קצרו, הוסיפו.</p>
+    </div>
+
+    <div class="prompt">
+      <div class="lb"><b>המשך - עורך הדין של השטן</b><button class="copy" type="button" aria-label="העתק את פרומפט עורך הדין של השטן"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>העתק</span></button></div>
+<pre>עכשיו תהיה עורך הדין של השטן. מה בתוכנית הזו ייכשל, ולמה? התייחס לכל שלב בנפרד.</pre>
+    </div>
+
+    <div class="prompt">
+      <div class="lb"><b>המשך - מה לא שאלתי</b><button class="copy" type="button" aria-label="העתק את פרומפט מה לא שאלתי"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>העתק</span></button></div>
+<pre>מה אני לא שואל אותך, שהייתי צריך לשאול?</pre>
+    </div>
+
+    <div class="prompt">
+      <div class="lb"><b>המשך - השוואה לעולם</b><button class="copy" type="button" aria-label="העתק את פרומפט ההשוואה לעולם"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>העתק</span></button></div>
+<pre>איך אוניברסיטאות מובילות בעולם מטפלות באותו אתגר בדיוק? תן לי שלוש דוגמאות קונקרטיות עם מקורות, ומה מהן אפשר לאמץ אצלנו בהתאמה.</pre>
+      <p class="hint"><b>המלצה חמה:</b> כאן הפעילו את מצב המחקר העמוק (<span class="en">Deep Research</span>) של הכלי שבחרתם. הוא מריץ עשרות חיפושים, קורא מאות מקורות, ומחזיר דוח מובנה תוך דקות.</p>
+    </div>
+
+    <div class="prompt">
+      <div class="lb"><b>המשך - להוציא תוצר</b><button class="copy" type="button" aria-label="העתק את פרומפט הוצאת התוצר"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>העתק</span></button></div>
+<pre>סכם את כל מה שהגענו אליו בשיחה. תן לי את זה בארבע צורות: כטקסט רציף, כטבלה של שלבים-אחראים-לוחות זמנים, כרשימת נקודות קצרה למייל להנהלה, וכתרשים זרימה. נתחיל מהטבלה.</pre>
+    </div>
+
+    <div class="callout"><b>שאלה לזוג:</b> מה בתוכנית שקיבלתם הפתיע אתכם? במה נחלקתם ביניכם, ומה אמר המודל על המחלוקת?</div>
+  </section>
+
+  <div class="group-title"><h2>בחירה חופשית - אחרי תחנה 1</h2></div>
+
+  <!-- ===== station 2 ===== -->
+  <details class="station" id="s2">
+    <summary><span class="n" aria-hidden="true">2</span><span class="tt"><h2>מחברת Gemini Notebook עם חומרי הדיקנט</h2><p class="what">מחברת שעונה רק מהנהלים שלכם, ואז פודקאסט, מפת חשיבה וסרטון</p></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+    <div class="body">
+      <p class="lead">בונים מחברת שעונה רק מהנהלים שלכם - ואז נותנים לה להפוך אותם לפודקאסט, למפת חשיבה ולסרטון. המחברת הזו תשמש בתחנה 3 כמקור ל-Gem.</p>
+      <ol class="steps">
+        <li>נכנסים ל-<a href="https://notebook.google.com" target="_blank" rel="noopener"><span class="en">notebook.google.com</span></a></li>
+        <li>לוחצים <span class="en">Create new notebook</span></li>
+        <li>בוחרים <span class="en">Upload a source</span> - קבצי PDF, מסמכי וורד, כתובות אתר, סרטוני יוטיוב, קבצי אודיו</li>
+        <li>מזינים לפחות שלושה מקורות: עמודי הנהלים הפומביים מאתר הדיקנט. מוצאים אותם בעצמכם - זה חלק מההתנסות</li>
+        <li>בחלונית הצ'אט שואלים שלוש שאלות אמיתיות, ובודקים שכל תשובה מגיעה עם הפניה ממוספרת למקור</li>
+        <li>בחלונית ה-<span class="en">Studio</span> מייצרים <span class="en">Audio Overview</span>, <span class="en">Mind Map</span>, ואם יש זמן <span class="en">Video Overview</span></li>
+      </ol>
+      <div class="prompt">
+        <div class="lb"><b>שלוש שאלות לדוגמה</b><button class="copy" type="button" aria-label="העתק את שלוש השאלות למחברת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>העתק</span></button></div>
+<pre>1. סטודנט במילואים פספס מועד הגשה. מה מגיע לו, ולפי איזה סעיף?
+2. הכן לי רשימה של עשר השאלות הנפוצות ביותר שסטודנט חדש ישאל על הנהלים האלה, עם תשובה קצרה לכל אחת.
+3. אילו זכויות מופיעות בתקנון אבל כמעט לא מוזכרות בטפסים?</pre>
+      </div>
+      <div class="callout"><b>שאלה לזוג:</b> הקשיבו לדקה מהפודקאסט. למי ביחידה, או לאילו סטודנטים, זה היה חוסך זמן אמיתי?</div>
+    </div>
+  </details>
+
+  <!-- ===== station 3 ===== -->
+  <details class="station" id="s3">
+    <summary><span class="n" aria-hidden="true">3</span><span class="tt"><h2>בונים Gem בג'מיני</h2><p class="what">מומחה שמור - בוט זכויות הסטודנט - בעשר דקות</p></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+    <div class="body">
+      <p class="lead">בונים "מומחה שמור" - בוט זכויות הסטודנט. מי שבנה מחברת בתחנה 2 יכול לצרף אותה כידע ל-Gem בלחיצה אחת.</p>
+      <ol class="steps">
+        <li>נכנסים ל-<a href="https://gemini.google.com" target="_blank" rel="noopener"><span class="en">gemini.google.com</span></a></li>
+        <li>פותחים את סרגל הצד (<span class="en">Open Sidebar</span>) ולוחצים <span class="en">Gems</span></li>
+        <li>לוחצים <span class="en">New Gem</span></li>
+        <li>נותנים שם, ומדביקים את ההוראות (התבנית למטה - בסיס לעריכה)</li>
+        <li>תחת <span class="en">Knowledge</span> לוחצים <span class="en">Add files</span> - מהמחשב, מהדרייב, או <span class="en">More uploads</span> ואז <span class="en">Notebooks</span> כדי לצרף את המחברת מתחנה 2</li>
+        <li>לוחצים <span class="en">Save</span>. ה-Gem מופיע תחת <span class="en">My Gems</span></li>
+      </ol>
+      <p>גוגל ממליצה על ארבעה רכיבים בהוראות - פרסונה, משימה, הקשר, פורמט - ומציעה כפתור שמרחיב שתי שורות להוראות מלאות. התבנית בנויה כך:</p>
+      <div class="prompt">
+        <div class="lb"><b>הוראות ה-Gem - בוט זכויות הסטודנט</b><button class="copy" type="button" aria-label="העתק את הוראות ה-Gem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>העתק</span></button></div>
+<pre>פרסונה: את/ה עוזר/ת מומחה/ית לזכויות הסטודנט בדיקנט הסטודנטים של האוניברסיטה העברית. הטון ענייני, אדיב ומדויק.
+
+משימה: לענות על שאלות של אנשי צוות הדיקנט בנוגע לזכויות, זכאויות, התאמות ונהלים - על בסיס המסמכים שצורפו בלבד.
+
+הקשר: המשתמשים הם רכזים ומנהלים ביחידות הדיקנט, לא סטודנטים. המסמכים שצורפו הם: תקנון זכויות הסטודנט, נהלי ועדות חריגים, התאמות למשרתי מילואים ולהורים, זכאות למלגות, ולוחות זמנים לערעורים.
+
+פורמט: תשובה קצרה בעברית, ומיד אחריה הפניה לסעיף המדויק במסמך שממנו נלקחה. אם התשובה לא נמצאת במסמכים - אמור/י זאת במפורש, אל תנחש/י, והפנה/י לרכז/ת הרלוונטי/ת.</pre>
+        <p class="hint">בסיס לעריכה - התאימו את רשימת המסמכים למה שבאמת צירפתם.</p>
+      </div>
+      <div class="callout"><b>מבחן:</b> שלוש שאלות אמיתיות שרכזים שואלים כל שבוע. האם הוא הפנה לסעיף? האם הודה כשלא ידע?</div>
+      <div class="callout"><b>שאלה לזוג:</b> אם היה לכם Gem כזה ביחידה - מה היה משתנה ביום העבודה של רכז חדש?</div>
+    </div>
+  </details>
+
+  <!-- ===== station 4 ===== -->
+  <details class="station" id="s4">
+    <summary><span class="n" aria-hidden="true">4</span><span class="tt"><h2>פרומפטים לקשב</h2><p class="what">חמש הטכניקות מהמצגת, כתובות כמו שסטודנט אמיתי היה כותב</p></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+    <div class="body">
+      <p class="lead">מנסים על עצמכם את הטכניקות מהמצגת. הפרומפטים מלאים - עם הקשר אמיתי - כדי שתראו מה המודל באמת מחזיר. החליפו את הפרטים בשלכם.</p>
+
+      <div class="prompt">
+        <div class="lb"><b>1 - פורס הגבינה</b><button class="copy" type="button" aria-label="העתק את פרומפט פורס הגבינה"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>העתק</span></button></div>
+<pre>אני סטודנטית שנה ב' לפסיכולוגיה. יש לי עבודה סמינריונית של עשרה עמודים על השפעת שינה על זיכרון עבודה, להגשה בעוד שנים עשר ימים. יש לי הפרעת קשב מאובחנת, וכבר שבוע אני לא מצליחה להתחיל - כל פעם שאני פותחת את המסמך אני נתקעת וסוגרת. קראתי כבר שלושה מאמרים ויש לי הערות מבולגנות בגוגל דוקס.
+פרק לי את כל העבודה לצעדים הכי קטנים שאפשר, כך שאף צעד לא ייקח יותר מחמש עשרה דקות. סדר אותם ברשימה כרונולוגית עם תיבות סימון, וכתוב ליד כל צעד מה נחשב "סיימתי". התחל מהצעד הכי קל שאני יכולה לעשות ממש עכשיו, בשתי הדקות הקרובות.</pre>
+      </div>
+
+      <div class="prompt">
+        <div class="lb"><b>2 - לוח זמנים הפוך</b><button class="copy" type="button" aria-label="העתק את פרומפט לוח הזמנים ההפוך"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>העתק</span></button></div>
+<pre>אני צריך להגיע מחר לבחינה בקמפוס הר הצופים בשמונה וחצי בבוקר. אני גר בגבעת שאול, הנסיעה באוטובוס לוקחת כארבעים דקות ואני תמיד מפספס את האוטובוס. לפני שאני יוצא אני צריך: להתקלח, לאכול משהו, לארגן תיק עם הציוד לבחינה, ולמצוא את אישור ההתאמות שלי שאני לא זוכר איפה שמתי. יש לי הפרעת קשב ואני מוסח בקלות, במיוחד בבוקר.
+בנה לי לוח זמנים הפוך שמתחיל בשמונה וחצי ועובד אחורה. כלול חמש דקות באפר בין כל שתי משימות, ועוד עשר דקות באפר לפני היציאה. תגיד לי בדיוק באיזו שעה להתעורר, ובאיזו שעה לחפש את האישור - כי זה הדבר שהכי סביר שייקח יותר זמן ממה שאני חושב.</pre>
+      </div>
+
+      <div class="prompt">
+        <div class="lb"><b>3 - הקאת מוח</b><button class="copy" type="button" aria-label="העתק את פרומפט הקאת המוח"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>העתק</span></button></div>
+<pre>הנה כל מה שעובר לי בראש עכשיו, בלי סדר: צריך לשלם שכר לימוד עד סוף החודש ואין לי מושג כמה נשאר. יש עבודה בסטטיסטיקה שלא התחלתי. אמא מתקשרת כל יום ואני לא עונה. צריך לקבוע תור לרופא בגלל המרשם לריטלין שנגמר. יש מבחן בפסיכולוגיה התפתחותית בעוד שבועיים. השותף לדירה כועס על הכלים. אני רוצה להתחיל ללכת לחדר כושר. צריך להגיש בקשה לסיוע כלכלי ולא יודע איפה הטופס. הלפטופ שלי איטי. יש לי תחושה שאני שוכח משהו חשוב.
+אחת, מיין את כל זה לקטגוריות: פעולות מיידיות, לימודים, אדמיניסטרציה, ואישי. שתיים, זהה את המשימה האחת שתוריד לי הכי הרבה חרדה אם אסיים אותה היום. שלוש, הערך זמן ביצוע ריאלי לכל פריט. ארבע, תגיד לי מה כנראה הדבר החשוב שאני שוכח.</pre>
+      </div>
+
+      <div class="prompt">
+        <div class="lb"><b>4 - מנתח הטון</b><button class="copy" type="button" aria-label="העתק את פרומפט מנתח הטון"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>העתק</span></button></div>
+<pre>קיבלתי את המייל הזה מהמרצה ואני בטוח שהוא כועס עליי ושהוא הולך להכשיל אותי:
+"שלום, ראיתי את ההגשה. יש בעיה בפרק השלישי, הניתוח לא תואם את המתודולוגיה שהצהרת עליה בהקדמה. תתקן ותגיש עד יום חמישי. בברכה, ד"ר לוי."
+נתח את הטון של המייל באופן אובייקטיבי לחלוטין. האם הוא תוקפני, או פשוט ענייני וישיר? מה בדיוק הוא מבקש, ומה הוא לא אומר? ואז עזור לי לנסח תשובה קצרה ומקצועית שמכירה בביקורת, מאשרת שאתקן עד יום חמישי, ושואלת שאלה אחת ממוקדת - בלי להתגונן ובלי להתנצל יתר על המידה.</pre>
+      </div>
+
+      <div class="prompt">
+        <div class="lb"><b>5 - חונך סוקרטי</b><button class="copy" type="button" aria-label="העתק את פרומפט החונך הסוקרטי"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>העתק</span></button></div>
+<pre>אני מדביק כאן קטע ממאמר שאני צריך להבין לעומק למבחן. אל תסכם אותו לי. במקום זה, פעל כחונך סוקרטי: שאל אותי שאלה אחת בכל פעם על הטקסט כדי לבדוק אם הבנתי. חכה לתשובה שלי, ורק אז תקן אותי או תעבור לשאלה הבאה. התחל מהשאלה הכי בסיסית.
+[הדבק כאן את הקטע]</pre>
+      </div>
+
+      <div class="callout"><b>לקרוא עם האוזניים:</b> לא פרומפט אלא פעולה - מזינים מאמר ל-Gemini Notebook ומייצרים <span class="en">Audio Overview</span>. מי שעבר בתחנה 2 כבר יודע איך.</div>
+      <div class="callout"><b>שאלה לזוג:</b> איזו מהטכניקות הייתם מלמדים לסטודנט מחר בבוקר - ואיפה בדיקנט זה היה יושב?</div>
+    </div>
+  </details>
+
+  <!-- ===== station 5 ===== -->
+  <details class="station" id="s5">
+    <summary><span class="n" aria-hidden="true">5</span><span class="tt"><h2>וויב קודינג בג'מיני</h2><p class="what">אפליקציה קטנה ליחידה - בלי לדעת לתכנת</p></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+    <div class="body">
+      <p class="lead">בונים אפליקציה קטנה ליחידה שלכם על ידי תיאור של מה אתם צריכים.</p>
+      <div class="callout"><b>הרציונל:</b> וויב קודינג הוא לתאר את הצורך בשפה טבעית ולתת לבינה לכתוב את הקוד, להריץ אותו, ולתקן. מי שיודע להסביר מה הוא צריך - יכול לבנות כלי שעובד. זה הופך את "צריך מחלקת מחשוב" ל"צריך שעה ורעיון ברור".</div>
+      <ol class="steps">
+        <li>נכנסים ל-<a href="https://gemini.google.com" target="_blank" rel="noopener"><span class="en">gemini.google.com</span></a> ומפעילים את כפתור <span class="en">Canvas</span> בסרגל הכלים של תיבת ההודעה</li>
+        <li>חושבים על אפליקציה אחת שהייתם רוצים ליחידה - משהו קטן ושימושי: מחשבון זכאות, טופס קבלת פנייה, לוח תורנויות, מדריך אינטראקטיבי לסטודנט חדש</li>
+        <li>כותבים את הצורך (התבנית למטה), שולחים, ומנסים את מה שנוצר</li>
+        <li>מבקשים תיקונים בשפה טבעית: "תוסיף...", "תשנה את...", "זה לא עובד כש..."</li>
+      </ol>
+      <p><b>איך מנסחים פרומפט לוויב קודינג:</b></p>
+      <ul class="tips">
+        <li><b>לנסח את הצורך, לא בהכרח את הדרך.</b> "אני צריך שרכז יוכל לראות בשנייה מי מהסטודנטים במעונות עוד לא הגיש טופס" - ולא "תבנה טבלה עם עמודות א' ב' ג'". הבינה תמצא את הדרך לשם.</li>
+        <li>לתאר מי המשתמש ומה הוא עושה עם זה ביום עבודה רגיל.</li>
+        <li>לתת דוגמה אחת אמיתית, עם נתונים בדויים, של מה נכנס ומה יוצא.</li>
+        <li>להתחיל קטן ולהוסיף בשיחה - לא לבקש הכל בבת אחת.</li>
+      </ul>
+      <div class="prompt">
+        <div class="lb"><b>תבנית</b><button class="copy" type="button" aria-label="העתק את תבנית הוויב קודינג"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>העתק</span></button></div>
+<pre>אני [תפקיד] ביחידת [שם היחידה] בדיקנט הסטודנטים. אני רוצה כלי קטן שיעזור לי ב[הצורך, במשפט אחד]. מי שישתמש בו: [מי]. מה שקורה היום בלי הכלי: [תיאור קצר של הכאב]. דוגמה: [נתונים בדויים - מה נכנס, מה אמור לצאת]. בנה לי גרסה ראשונה פשוטה שאפשר להשתמש בה, בעברית, ותסביר לי בשתי שורות מה בנית. אחר כך נשפר יחד.</pre>
+        <p class="hint">בסיס לעריכה - מלאו את הסוגריים בשלכם.</p>
+      </div>
+      <div class="callout"><b>מה חשוב לדעת:</b> הכלי הזה בג'מיני מוגבל ביכולות שלו - הוא טעימה. אבל <span class="en">ChatGPT Work</span>, <span class="en">Claude Code</span>, <span class="en">Grok Bot</span> ועוד שחקנים בשוק מאפשרים היום לבנות אפליקציות ייעודיות בקלות - כאלה שמשרתות את צוות היחידה או את הסטודנטים, עם נתונים אמיתיים ועם תחזוקה לאורך זמן.</div>
+      <div class="callout"><b>שאלה לזוג:</b> מה הדבר הראשון שהאפליקציה שלכם עשתה נכון, ומה היא לא הבינה? מה בניסוח שלכם גרם לזה?</div>
+    </div>
+  </details>
+
+  <!-- ===== station 6 - everyone ends here ===== -->
+  <section class="card station anchor" id="s6" aria-labelledby="s6-h">
+    <p class="banner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>כולם מסיימים כאן</p>
+    <div class="station-head"><span class="n" aria-hidden="true">6</span><h2 id="s6-h">ואיך זה נראה אצלנו</h2></div>
+    <p class="lead">עוצרים את ההתנסות ומדברים בזוג. המטרה: לצאת עם משפט אחד - "הדבר הראשון שננסה ביחידה שלנו הוא..." - שנאמר אחר כך בקול במליאה.</p>
+    <ol class="steps">
+      <li>מה מכל מה שניסיתם היום הכי קרוב לשימוש אמיתי ביחידה שלכם - ומה חוסם אותו?</li>
+      <li>איזה ידע ביחידה שלכם "מתאדה" היום - ואיפה הייתם מתחילים לאסוף אותו?</li>
+      <li>אם היה לכם Gem או מחברת שעובדים - מי ביחידה משתמש בהם ראשון, ועל מה?</li>
+      <li>מה צריך לקרות ברמת האוניברסיטה - רישיון, אישור, מדיניות - כדי שזה יעבור מטעימה להטמעה?</li>
+      <li>מה אתם רוצים ללמד את הסטודנטים שלכם - ומי מלמד את זה היום?</li>
+      <li><b>וויב קודינג:</b> איזו אפליקציה הייתם מפתחים היום, אילו ידעתם לעבוד עם סוכני קידוד מתקדמים? האם כבר יצא לכם להתנסות?</li>
+    </ol>
+    <div class="callout"><b>המשפט של היחידה:</b> כשאתם מוכנים - מרימים יד. נשמע את כולם במליאה.</div>
+  </section>
+
+</div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>סדנת בינה מלאכותית לדיקנט הסטודנטים, האוניברסיטה העברית &middot; תום הגלעדי &middot; <a href="deck/">למצגת של ההרצאה</a></p>
+    <div class="accessibility-statement">
+      <h3>הצהרת נגישות</h3>
+      <p>אתר זה עומד בדרישות תקנות שוויון זכויות לאנשים עם מוגבלות (התאמות נגישות לשירות), התשע"ג-2013, ותקן ישראלי ת"י 5568 המבוסס על הנחיות WCAG 2.0 ברמה AA.</p>
+      <p>אם נתקלתם בבעיית נגישות באתר, אנא פנו אלינו ונשמח לסייע:</p>
+      <p><strong>רכז נגישות:</strong> תום הגלעדי<br><strong>אימייל:</strong> <a href="mailto:tomhagiladi@gmail.com">tomhagiladi@gmail.com</a></p>
+    </div>
+  </div>
+</footer>
+
+<div class="sr-only" aria-live="polite" id="live"></div>
+
+<script>
+(function(){
+  // --- copy buttons: clipboard API with a fallback, announce for screen readers
+  const live=document.getElementById('live');
+  const check='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>';
+  document.querySelectorAll('.copy').forEach(btn=>{
+    const original=btn.innerHTML;
+    btn.addEventListener('click',async()=>{
+      const pre=btn.closest('.prompt').querySelector('pre');
+      const text=pre.innerText;
+      try{ await navigator.clipboard.writeText(text); }
+      catch(e){ const ta=document.createElement('textarea'); ta.value=text; ta.setAttribute('readonly',''); ta.style.position='absolute'; ta.style.left='-9999px';
+        document.body.appendChild(ta); ta.select(); try{document.execCommand('copy');}catch(_){} document.body.removeChild(ta); }
+      btn.classList.add('done'); btn.innerHTML=check+'<span>הועתק</span>'; live.textContent='הפרומפט הועתק ללוח';
+      setTimeout(()=>{ btn.classList.remove('done'); btn.innerHTML=original; live.textContent=''; },1800);
+    });
+  });
+
+  // --- rail / stepper: open a collapsed station when its dot is clicked, track the active one on scroll
+  const dots=[...document.querySelectorAll('.rail a, .stepper a')];
+  dots.forEach(a=>a.addEventListener('click',()=>{
+    const t=document.getElementById(a.dataset.st);
+    if(t && t.tagName==='DETAILS') t.open=true;
+  }));
+  const ids=['s1','s2','s3','s4','s5','s6'];
+  const setActive=id=>dots.forEach(a=>{ const on=a.dataset.st===id; a.classList.toggle('is-active',on); if(on) a.setAttribute('aria-current','location'); else a.removeAttribute('aria-current'); });
+  if('IntersectionObserver' in window){
+    const vis=new Map();
+    const io=new IntersectionObserver(es=>{
+      es.forEach(e=>vis.set(e.target.id,e.intersectionRatio));
+      let best=null,bestR=0; ids.forEach(id=>{ const r=vis.get(id)||0; if(r>bestR){bestR=r;best=id;} });
+      if(best) setActive(best);
+    },{threshold:[0,.15,.3,.5,.7],rootMargin:'-80px 0px -40% 0px'});
+    ids.forEach(id=>{ const el=document.getElementById(id); if(el) io.observe(el); });
+  }
+  setActive('s1');
+
+  // --- tables scroll on narrow screens (accessibility skill)
+  document.querySelectorAll('table').forEach(table=>{
+    const w=document.createElement('div'); w.className='table-scroll-wrapper'; w.setAttribute('tabindex','0'); w.setAttribute('role','region'); w.setAttribute('aria-label','טבלה ניתנת לגלילה');
+    table.parentNode.insertBefore(w,table); w.appendChild(table);
+  });
+})();
+</script>
+</body>
+</html>
